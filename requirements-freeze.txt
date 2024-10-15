@@ -4,54 +4,32 @@ aiohttp==3.10.10
 aiohttp-retry==2.8.3
 aiosignal==1.3.1
 amqp==5.2.0
-anaconda-anon-usage @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_3eler6mjxh/croot/anaconda-anon-usage_1710965076906/work
 annotated-types==0.7.0
 antlr4-python3-runtime==4.9.3
-anyio==4.6.0
 appdirs==1.4.4
-appnope==0.1.4
-archspec @ file:///croot/archspec_1709217642129/work
-argon2-cffi==23.1.0
-argon2-cffi-bindings==21.2.0
-arrow==1.3.0
-asttokens==2.4.1
 astunparse==1.6.3
-async-lru==2.0.4
 asyncssh==2.17.0
 atpublic==5.0
 attrs==24.2.0
-babel==2.16.0
-beautifulsoup4==4.12.3
 billiard==4.2.1
-bleach==6.1.0
-boltons @ file:///Users/cbousseau/work/recipes/ci_py311/boltons_1677965141748/work
-Brotli @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_27zk0eqdh0/croot/brotli-split_1714483157007/work
 cachetools==5.5.0
 celery==5.4.0
-certifi @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_70oty9s9jh/croot/certifi_1720453497032/work/certifi
+certifi==2024.8.30
 cffi==1.17.1
-charset-normalizer @ file:///croot/charset-normalizer_1721748349566/work
+charset-normalizer==3.4.0
 click==8.1.7
 click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
 colorama==0.4.6
-comm==0.2.2
-conda @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_6fdicqiami/croot/conda_1722004613620/work
-conda-content-trust @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_9fusbfzixa/croot/conda-content-trust_1714483157715/work
-conda-libmamba-solver @ file:///croot/conda-libmamba-solver_1721662679737/work/src
-conda-package-handling @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_ef9phnqphe/croot/conda-package-handling_1718138279942/work
-conda_package_streaming @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_6dgq200203/croot/conda-package-streaming_1718136087190/work
 configobj==5.0.9
 contourpy==1.3.0
-cryptography @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_31zgxm62w8/croot/cryptography_1714660690857/work
+cryptography==43.0.1
 cycler==0.12.1
-debugpy==1.8.7
 decorator==5.1.1
-defusedxml==0.7.1
 dictdiffer==0.9.0
 diskcache==5.6.3
-distro @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_ddkyz0575y/croot/distro_1714488254309/work
+distro==1.9.0
 dpath==2.2.0
 dulwich==0.22.1
 dvc==3.53.2
@@ -63,15 +41,11 @@ dvc-render==1.0.2
 dvc-studio-client==0.21.0
 dvc-task==0.40.2
 entrypoints==0.4
-executing==2.1.0
-fastjsonschema==2.20.0
 filelock==3.16.1
 flatbuffers==24.3.25
 flatten-dict==0.4.2
 flufl.lock==8.1.0
 fonttools==4.54.1
-fqdn==1.5.1
-frozendict @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_8b0cest_id/croot/frozendict_1713194839836/work
 frozenlist==1.4.1
 fsspec==2024.9.0
 funcy==2.0
@@ -91,154 +65,83 @@ googleapis-common-protos==1.65.0
 grandalf==0.8
 grpcio==1.66.2
 gto==1.7.1
-h11==0.14.0
 h5py==3.12.1
-httpcore==1.0.6
-httpx==0.27.2
 hydra-core==1.3.2
-idna @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_a12xpo84t2/croot/idna_1714398852854/work
-ipykernel==6.29.5
-ipython==8.28.0
-ipywidgets==8.1.5
-isoduration==20.11.0
+idna==3.10
 iterative-telemetry==0.0.9
-jedi==0.19.1
-Jinja2==3.1.4
-joblib==1.4.2
-json5==0.9.25
-jsonpatch @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_3ajyoz8zoj/croot/jsonpatch_1714483362270/work
-jsonpointer==2.1
-jsonschema==4.23.0
-jsonschema-specifications==2024.10.1
-jupyter==1.1.1
-jupyter-console==6.6.3
-jupyter-events==0.10.0
-jupyter-lsp==2.2.5
-jupyter_client==8.6.3
-jupyter_core==5.7.2
-jupyter_server==2.14.2
-jupyter_server_terminals==0.5.3
-jupyterlab==4.2.5
-jupyterlab_pygments==0.3.0
-jupyterlab_server==2.27.3
-jupyterlab_widgets==3.0.13
 keras==3.6.0
 kiwisolver==1.4.7
 kombu==5.4.2
 libclang==18.1.1
-libmambapy @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_8b8wjifot8/croot/mamba-split_1714483537242/work/libmambapy
 Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==3.0.1
 matplotlib==3.9.2
-matplotlib-inline==0.1.7
 mdurl==0.1.2
-menuinst @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_ad321a45td/croot/menuinst_1723567614652/work
-mistune==3.0.2
 ml-dtypes==0.4.1
 multidict==6.1.0
 namex==0.0.8
-nbclient==0.10.0
-nbconvert==7.16.4
-nbformat==5.10.4
-nest-asyncio==1.6.0
 networkx==3.4.1
-notebook==7.2.2
-notebook_shim==0.2.4
 numpy==1.26.4
 oauthlib==3.2.2
 omegaconf==2.3.0
 opt_einsum==3.4.0
 optree==0.13.0
 orjson==3.10.7
-overrides==7.7.0
-packaging @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_81ri4yfpjw/croot/packaging_1720101866878/work
-pandas==2.2.3
-pandocfilters==1.5.1
-parso==0.8.4
+packaging==24.1
 pathspec==0.12.1
-pexpect==4.9.0
 pillow==10.4.0
-pip @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_56bm8upaq4/croot/pip_1723484605193/work
-platformdirs @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_a8u4fy8k9o/croot/platformdirs_1692205661656/work
-pluggy @ file:///Users/cbousseau/work/recipes/ci_py311/pluggy_1677906980825/work
-prometheus_client==0.21.0
+pip==24.2
+platformdirs==3.11.0
 prompt_toolkit==3.0.48
 propcache==0.2.0
 proto-plus==1.24.0
 protobuf==4.25.5
 psutil==6.0.0
-ptyprocess==0.7.0
-pure_eval==0.2.3
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
-pycosat @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_19qelmdbl6/croot/pycosat_1714510743067/work
-pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pycparser==2.22
 pydantic==2.9.2
 pydantic_core==2.23.4
 pydot==3.0.2
 pygit2==1.16.0
 Pygments==2.18.0
 pygtrie==2.5.0
-pyparsing==3.1.4
-PySocks @ file:///Users/cbousseau/work/recipes/ci_py311/pysocks_1677906386870/work
+pyparsing==3.2.0
 python-dateutil==2.9.0.post0
-python-json-logger==2.0.7
-pytz==2024.2
 PyYAML==6.0.2
-pyzmq==26.2.0
-referencing==0.35.1
-requests @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_70sm12ba9w/croot/requests_1721414707360/work
+requests==2.32.3
 requests-oauthlib==2.0.0
-rfc3339-validator==0.1.4
-rfc3986-validator==0.1.1
 rich==13.9.2
-rpds-py==0.20.0
 rsa==4.9
-ruamel.yaml @ file:///Users/cbousseau/work/recipes/ci_py311/ruamel.yaml_1677934845850/work
+ruamel.yaml==0.18.6
+ruamel.yaml.clib==0.2.8
 scmrepo==3.3.8
 semver==3.0.2
-Send2Trash==1.8.3
-setuptools==72.1.0
+setuptools==74.1.2
 shellingham==1.5.4
 shortuuid==1.0.13
 shtab==1.7.1
 six==1.16.0
 smmap==5.0.1
-sniffio==1.3.1
-soupsieve==2.6
 sqltrie==0.11.1
-stack-data==0.6.3
 tabulate==0.9.0
 tensorboard==2.17.1
 tensorboard-data-server==0.7.2
 tensorflow==2.17.0
 tensorflow-io-gcs-filesystem==0.37.1
 termcolor==2.5.0
-terminado==0.18.1
-threadpoolctl==3.5.0
-tinycss2==1.3.0
 tomlkit==0.13.2
-tornado==6.4.1
-tqdm @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_f76_dxtcsh/croot/tqdm_1716395948224/work
-traitlets==5.14.3
-truststore @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_42mm7e6j06/croot/truststore_1695244298716/work
+tqdm==4.66.5
 typer==0.12.5
-types-python-dateutil==2.9.0.20241003
 typing_extensions==4.12.2
 tzdata==2024.2
-uri-template==1.3.0
-urllib3 @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_cao7_u9937/croot/urllib3_1718912649114/work
+urllib3==2.2.3
 vine==5.1.0
 voluptuous==0.15.2
 wcwidth==0.2.13
-webcolors==24.8.0
-webencodings==0.5.1
-websocket-client==1.8.0
 Werkzeug==3.0.4
-wheel==0.43.0
-widgetsnbextension==4.0.13
+wheel==0.44.0
 wrapt==1.16.0
 yarl==1.15.2
 zc.lockfile==3.0.post1
-zstandard @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_054juzz3it/croot/zstandard_1714677666952/work
