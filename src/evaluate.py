@@ -6,6 +6,7 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import bentoml
 
 
 def get_training_plot(model_history: dict) -> plt.Figure:
@@ -128,9 +129,14 @@ def main() -> None:
     with open(prepared_dataset_folder / "labels.json") as f:
         labels = json.load(f)
 
+    # Import the model to the model store from a local model folder
+    try:
+        bentoml.models.import_model(f"{model_folder}/celestial_bodies_classifier_model.bentomodel")
+    except bentoml.exceptions.BentoMLException:
+        print("Model already exists in the model store - skipping import.")
+
     # Load model
-    model_path = model_folder / "model.keras"
-    model = tf.keras.models.load_model(model_path)
+    model = bentoml.keras.load_model("celestial_bodies_classifier_model")
     model_history = np.load(model_folder / "history.npy", allow_pickle=True).item()
 
     # Log metrics
