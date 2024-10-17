@@ -1,104 +1,108 @@
-name: MLOps  # The name of this GitHub Actions workflow. It helps identify the workflow in the GitHub Actions dashboard.
+name: MLOps
 
 on:
-  # Specifies the conditions that will trigger the workflow.
-
-  # The workflow will run when there is a push to the 'main' branch.
+  # Runs on pushes targeting main branch
   push:
     branches:
-      - main  # This workflow will be triggered when there is a push event to the 'main' branch.
+      - main
 
-  # The workflow will also run when a pull request is opened or updated.
+  # Runs on pull requests
   pull_request:
 
-  # Allows the workflow to be manually triggered from the GitHub Actions tab.
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  train-and-report:  # A job named 'train-and-report' to perform training and report generation.
-    permissions: write-all  # Grants full permissions to perform actions like reading and writing to the repository.
-    runs-on: ubuntu-latest  # The job will run on the latest version of the Ubuntu operating system.
-
-    steps:  # The list of steps that will be executed in sequence as part of the job.
-    
-      # Step 1: Checkout the code from the repository
-      - name: Checkout repository  # This step pulls down the repository’s code.
-        uses: actions/checkout@v4  # This is a standard GitHub Action to checkout the repository at its current state.
-
-      # Step 2: Setup Python
-      - name: Setup Python  # This step ensures that the right version of Python is available for the job.
-        uses: actions/setup-python@v5  # Using the official 'setup-python' GitHub action to set up the Python environment.
+  train-report-and-publish:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # Specifies that Python version 3.11 should be installed.
-          cache: pip  # Caches pip dependencies to speed up subsequent builds (saves time by not re-installing dependencies).
-
-      # Step 3: Install dependencies
-      - name: Install dependencies  # Install the required Python packages needed for the project.
-        run: pip install --requirement requirements-freeze.txt  # Installs the dependencies specified in the 'requirements-freeze.txt' file.
-
-      # Step 4: Authenticate with Google Cloud
-      - name: Login to Google Cloud  # Authenticate with Google Cloud to access resources such as storage buckets or compute resources.
-        uses: google-github-actions/auth@v2  # Use the Google Cloud authentication action.
+          python-version: '3.11'
+          cache: pip
+      - name: Install dependencies
+        run: pip install --requirement requirements-freeze.txt
+      - name: Login to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}'  # Credentials are securely provided from GitHub Secrets.
-
-      # Step 5: Train the model
-      - name: Train model  # Run the DVC pipeline to train the machine learning model.
-        run: dvc repro --pull  # Reproduce the pipeline from DVC, pulling necessary data before training.
-
-      # Step 6: Setup CML for generating reports
-      - name: Setup CML  # Sets up CML (Continuous Machine Learning) for automatic report generation.
-        if: github.event_name == 'pull_request'  # This step runs only if the current event is a pull request.
-        uses: iterative/setup-cml@v2  # Setup the CML tool using version 2 of the action.
+          credentials_json: '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}'
+      - name: Train model
+        run: dvc repro --pull
+      - name: Setup CML
+        if: github.event_name == 'pull_request'
+        uses: iterative/setup-cml@v2
         with:
-          version: '0.20.0'  # Specifies that CML version 0.20.0 should be used.
-
-      # Step 7: Create a CML report for the pull request
-      - name: Create CML report  # Generate a report to summarize the experiment results.
-        if: github.event_name == 'pull_request'  # This step only runs for pull requests.
+          version: '0.20.0'
+      - name: Create CML report
+        if: github.event_name == 'pull_request'
         env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub's token for authentication in order to post comments.
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Fetch the main branch to compare with the current workflow branch.
+          # Fetch all other Git branches
           git fetch --depth=1 origin main:main
 
-          # Add a title to the report
+          # Add title to the report
           echo "# Experiment Report (${{ github.sha }})" >> report.md
 
-          # Compare model parameters between the current branch and main
+          # Compare parameters to main branch
           echo "## Params workflow vs. main" >> report.md
-          dvc params diff main --md >> report.md  # Adds parameter differences to the report.
+          dvc params diff main --md >> report.md
 
-          # Compare evaluation metrics between the current branch and main
+          # Compare metrics to main branch
           echo "## Metrics workflow vs. main" >> report.md
-          dvc metrics diff main --md >> report.md  # Adds metrics differences to the report.
+          dvc metrics diff main --md >> report.md
 
-          # Compare plots (like training history or predictions) between the current branch and main
-          dvc plots diff main  # Generate plot differences between branches.
+          # Compare plots (images) to main branch
+          dvc plots diff main
 
-          # Add Plots section to the report
+          # Create plots
           echo "## Plots" >> report.md
 
-          # Add training history plots from both main and the current workspace
+          # Create training history plot
           echo "### Training History" >> report.md
           echo "#### main" >> report.md
           echo '![](./dvc_plots/static/main_evaluation_plots_training_history.png "Training History")' >> report.md
           echo "#### workspace" >> report.md
           echo '![](./dvc_plots/static/workspace_evaluation_plots_training_history.png "Training History")' >> report.md
 
-          # Add predictions preview from both main and the current workspace
+          # Create predictions preview
           echo "### Predictions Preview" >> report.md
           echo "#### main" >> report.md
           echo '![](./dvc_plots/static/main_evaluation_plots_pred_preview.png "Predictions Preview")' >> report.md
           echo "#### workspace" >> report.md
           echo '![](./dvc_plots/static/workspace_evaluation_plots_pred_preview.png "Predictions Preview")' >> report.md
 
-          # Add confusion matrix from both main and the current workspace
+          # Create confusion matrix
           echo "### Confusion Matrix" >> report.md
           echo "#### main" >> report.md
           echo '![](./dvc_plots/static/main_evaluation_plots_confusion_matrix.png "Confusion Matrix")' >> report.md
           echo "#### workspace" >> report.md
           echo '![](./dvc_plots/static/workspace_evaluation_plots_confusion_matrix.png "Confusion Matrix")' >> report.md
 
-          # Publish the CML report as a comment on the pull request
-          cml comment update --target=pr --publish report.md  # The report will be posted as a comment on the pull request.
+          # Publish the CML report
+          cml comment update --target=pr --publish report.md
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.GCP_CONTAINER_REGISTRY_HOST }}
+          username: _json_key
+          password: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      - name: Import the BentoML model
+        if: github.ref == 'refs/heads/main'
+        run: bentoml models import model/celestial_bodies_classifier_model.bentomodel
+      - name: Build the BentoML model artifact
+        if: github.ref == 'refs/heads/main'
+        run: bentoml build src
+      - name: Containerize and publish the BentoML model artifact Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # Containerize the Bento
+          bentoml containerize celestial_bodies_classifier:latest \
+            --image-tag ${{ secrets.GCP_CONTAINER_REGISTRY_HOST }}/celestial-bodies-classifier:latest \
+            --image-tag ${{ secrets.GCP_CONTAINER_REGISTRY_HOST }}/celestial-bodies-classifier:${{ github.sha }}
+          # Push the container to the Container Registry
+          docker push --all-tags ${{ secrets.GCP_CONTAINER_REGISTRY_HOST }}/celestial-bodies-classifier
