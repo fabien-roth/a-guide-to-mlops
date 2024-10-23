@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  train-report-and-publish:
+  train-report-publish-and-deploy:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
@@ -106,3 +106,19 @@ jobs:
             --image-tag ${{ secrets.GCP_CONTAINER_REGISTRY_HOST }}/celestial-bodies-classifier:${{ github.sha }}
           # Push the container to the Container Registry
           docker push --all-tags ${{ secrets.GCP_CONTAINER_REGISTRY_HOST }}/celestial-bodies-classifier
+      - name: Get Google Cloud's Kubernetes credentials
+        if: github.ref == 'refs/heads/main'
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ secrets.GCP_K8S_CLUSTER_NAME }}
+          location: ${{ secrets.GCP_K8S_CLUSTER_ZONE }}
+      - name: Update the Kubernetes deployment
+        if: github.ref == 'refs/heads/main'
+        run: |
+          yq -i '.spec.template.spec.containers[0].image = "${{ secrets.GCP_CONTAINER_REGISTRY_HOST }}/celestial-bodies-classifier:${{ github.sha }}"' kubernetes/deployment.yaml
+      - name: Deploy the model on Kubernetes
+        if: github.ref == 'refs/heads/main'
+        run: |
+          kubectl apply \
+            -f kubernetes/deployment.yaml \
+            -f kubernetes/service.yaml
