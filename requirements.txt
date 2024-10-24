@@ -5,3 +5,4 @@ dvc[gs]==3.53.2
 bentoml==1.3.7
 pillow==10.4.0
 label-studio==1.13.1
+fastapi[standard]==0.115.0
