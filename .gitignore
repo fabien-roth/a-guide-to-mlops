@@ -13,3 +13,6 @@ dvc_plots
 .DS_Store
 
 /model
+
+# Label Studio
+extra-data/
