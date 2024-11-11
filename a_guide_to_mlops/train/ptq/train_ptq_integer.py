@@ -2,10 +2,18 @@ import sys
 from pathlib import Path
 import tensorflow as tf
 import bentoml
-from utils.config_loader import load_config
-from utils.preprocessing import preprocess, postprocess
-from utils.seed import set_seed
-from models.model_builder import get_model
+import json
+from model.model_builder import get_model
+from a_guide_to_mlops.utils.config_loader import load_config
+from a_guide_to_mlops.utils.seed import set_seed
+
+
+def representative_dataset_gen(ds_train):
+    """Generate representative data for calibration during full integer quantization."""
+    for input_value, _ in ds_train.take(100):
+        # Remove batch dimension if it exists and ensure correct input shape
+        yield [tf.cast(input_value, tf.float32)]
+
 
 def main():
     if len(sys.argv) != 3:
@@ -52,14 +60,23 @@ def main():
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    converter.representative_dataset = lambda: representative_dataset_gen(ds_train)
     converter.inference_input_type = tf.int8  # or tf.uint8
     converter.inference_output_type = tf.int8  # or tf.uint8
-    quantized_model = converter.convert()
 
-    # Save the quantized TFLite model
-    model_folder.mkdir(parents=True, exist_ok=True)
-    with open(model_folder / "celestial_bodies_classifier_model_ptq_integer.tflite", "wb") as f:
-        f.write(quantized_model)
+    try:
+        quantized_model = converter.convert()
+
+        # Save the quantized TFLite model
+        model_folder.mkdir(parents=True, exist_ok=True)
+        with open(model_folder / "celestial_bodies_classifier_model_ptq_integer.tflite", "wb") as f:
+            f.write(quantized_model)
+
+        print(f"\nModel and training history saved at {model_folder.absolute()}")
+
+    except Exception as e:
+        print(f"Failed to quantize the model. Error: {str(e)}")
+
 
 if __name__ == "__main__":
     main()

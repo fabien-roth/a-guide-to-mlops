@@ -1,11 +1,12 @@
 import sys
+import json
 from pathlib import Path
 import tensorflow as tf
 import bentoml
-from utils.config_loader import load_config
-from utils.preprocessing import preprocess, postprocess
-from utils.seed import set_seed
-from models.model_builder import get_model
+from a_guide_to_mlops.utils.config_loader import load_config
+from a_guide_to_mlops.utils.preprocessing import preprocess, postprocess
+from a_guide_to_mlops.utils.seed import set_seed
+from model.model_builder import get_model
 
 def main():
     if len(sys.argv) != 3:
@@ -58,6 +59,8 @@ def main():
     model_folder.mkdir(parents=True, exist_ok=True)
     with open(model_folder / "celestial_bodies_classifier_model_ptq_float16.tflite", "wb") as f:
         f.write(quantized_model)
+
+    print(f"\nModel and training history saved at {model_folder.absolute()}")
 
 if __name__ == "__main__":
     main()
