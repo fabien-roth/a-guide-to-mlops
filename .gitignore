@@ -4,6 +4,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 
+build/
+
 ## DVC
 
 # DVC plots
@@ -16,3 +18,4 @@ dvc_plots
 
 # Label Studio
 extra-data/
+
