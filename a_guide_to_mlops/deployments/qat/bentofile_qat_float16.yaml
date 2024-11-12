@@ -1,0 +1,15 @@
+service: 'serve:CelestialBodiesClassifierServiceQATFloat16'
+include:
+  - serve.py
+python:
+  packages:
+    - "tensorflow==2.17.0"
+    - "matplotlib==3.9.2"
+    - "pillow==10.4.0"
+docker:
+  python_version: "3.11"
+artifacts:
+  - name: "qat_float16_model"
+    path: "model/qat/celestial_bodies_classifier_model_qat_float16.tflite"
+labels:
+  quantization: "qat_float16"

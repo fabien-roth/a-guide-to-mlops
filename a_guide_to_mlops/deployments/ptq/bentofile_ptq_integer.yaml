@@ -1,0 +1,15 @@
+service: 'serve:CelestialBodiesClassifierServicePTQInteger'
+include:
+  - serve.py
+python:
+  packages:
+    - "tensorflow==2.17.0"
+    - "matplotlib==3.9.2"
+    - "pillow==10.4.0"
+docker:
+  python_version: "3.11"
+artifacts:
+  - name: "ptq_integer_model"
+    path: "model/ptq/celestial_bodies_classifier_model_ptq_integer.tflite"
+labels:
+  quantization: "ptq_integer"

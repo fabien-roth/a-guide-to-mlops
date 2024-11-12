@@ -1,32 +1,164 @@
 stages:
   prepare:
-    cmd: python3.11 src/prepare.py data/raw data/prepared
+    cmd: python3.11 a_guide_to_mlops/prepare.py data/raw data/prepared
     deps:
-    - data/raw
-    - src/prepare.py
-    - src/utils/seed.py
+      - data/raw
+      - a_guide_to_mlops/prepare.py
     params:
-    - prepare
+      - prepare
     outs:
-    - data/prepared
-  train:
-    cmd: python3.11 src/train.py data/prepared model
+      - data/prepared
+
+  baseline_train:
+    cmd: python3.11 a_guide_to_mlops/train/baseline/train.py data/prepared model/baseline
     deps:
-    - data/prepared
-    - src/train.py
-    - src/utils/seed.py
+      - data/prepared
+      - a_guide_to_mlops/train/baseline/train.py
     params:
-    - train
+      - train
     outs:
-    - model
-  evaluate:
-    cmd: python3.11 src/evaluate.py model data/prepared
+      - model/baseline
+
+  ptq_dynamic_train:
+    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_dynamic.py data/prepared model/ptq/dynamic
     deps:
-    - model
-    - src/evaluate.py
+      - data/prepared
+      - a_guide_to_mlops/train/ptq/train_ptq_dynamic.py
+    params:
+      - train
+    outs:
+      - model/ptq/dynamic
+
+  ptq_float16_train:
+    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_float16.py data/prepared model/ptq/float16
+    deps:
+      - data/prepared
+      - a_guide_to_mlops/train/ptq/train_ptq_float16.py
+    params:
+      - train
+    outs:
+      - model/ptq/float16
+
+  ptq_integer_train:
+    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_integer.py data/prepared model/ptq/integer
+    deps:
+      - data/prepared
+      - a_guide_to_mlops/train/ptq/train_ptq_integer.py
+    params:
+      - train
+    outs:
+      - model/ptq/integer
+
+  qat_dynamic_train:
+    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_dynamic.py data/prepared model/qat/dynamic
+    deps:
+      - data/prepared
+      - a_guide_to_mlops/train/qat/train_qat_dynamic.py
+    params:
+      - train
+    outs:
+      - model/qat/dynamic
+
+  qat_float16_train:
+    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_float16.py data/prepared model/qat/float16
+    deps:
+      - data/prepared
+      - a_guide_to_mlops/train/qat/train_qat_float16.py
+    params:
+      - train
+    outs:
+      - model/qat/float16
+
+  qat_integer_train:
+    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_integer.py data/prepared model/qat/integer
+    deps:
+      - data/prepared
+      - a_guide_to_mlops/train/qat/train_qat_integer.py
+    params:
+      - train
+    outs:
+      - model/qat/integer
+
+  evaluate_baseline:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/baseline data/prepared
+    deps:
+      - model/baseline
+      - a_guide_to_mlops/evaluate.py
     metrics:
-    - evaluation/metrics.json
+      - evaluation/baseline/metrics.json
     plots:
-    - evaluation/plots/confusion_matrix.png
-    - evaluation/plots/pred_preview.png
-    - evaluation/plots/training_history.png
+      - evaluation/baseline/plots/confusion_matrix.png
+      - evaluation/baseline/plots/pred_preview.png
+      - evaluation/baseline/plots/training_history.png
+
+  evaluate_ptq_dynamic:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/dynamic data/prepared
+    deps:
+      - model/ptq/dynamic
+      - a_guide_to_mlops/evaluate.py
+    metrics:
+      - evaluation/ptq/dynamic/metrics.json
+    plots:
+      - evaluation/ptq/dynamic/plots/confusion_matrix.png
+      - evaluation/ptq/dynamic/plots/pred_preview.png
+      - evaluation/ptq/dynamic/plots/training_history.png
+
+  evaluate_ptq_float16:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/float16 data/prepared
+    deps:
+      - model/ptq/float16
+      - a_guide_to_mlops/evaluate.py
+    metrics:
+      - evaluation/ptq/float16/metrics.json
+    plots:
+      - evaluation/ptq/float16/plots/confusion_matrix.png
+      - evaluation/ptq/float16/plots/pred_preview.png
+      - evaluation/ptq/float16/plots/training_history.png
+
+  evaluate_ptq_integer:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/integer data/prepared
+    deps:
+      - model/ptq/integer
+      - a_guide_to_mlops/evaluate.py
+    metrics:
+      - evaluation/ptq/integer/metrics.json
+    plots:
+      - evaluation/ptq/integer/plots/confusion_matrix.png
+      - evaluation/ptq/integer/plots/pred_preview.png
+      - evaluation/ptq/integer/plots/training_history.png
+
+  evaluate_qat_dynamic:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/dynamic data/prepared
+    deps:
+      - model/qat/dynamic
+      - a_guide_to_mlops/evaluate.py
+    metrics:
+      - evaluation/qat/dynamic/metrics.json
+    plots:
+      - evaluation/qat/dynamic/plots/confusion_matrix.png
+      - evaluation/qat/dynamic/plots/pred_preview.png
+      - evaluation/qat/dynamic/plots/training_history.png
+
+  evaluate_qat_float16:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/float16 data/prepared
+    deps:
+      - model/qat/float16
+      - a_guide_to_mlops/evaluate.py
+    metrics:
+      - evaluation/qat/float16/metrics.json
+    plots:
+      - evaluation/qat/float16/plots/confusion_matrix.png
+      - evaluation/qat/float16/plots/pred_preview.png
+      - evaluation/qat/float16/plots/training_history.png
+
+  evaluate_qat_integer:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/integer data/prepared
+    deps:
+      - model/qat/integer
+      - a_guide_to_mlops/evaluate.py
+    metrics:
+      - evaluation/qat/integer/metrics.json
+    plots:
+      - evaluation/qat/integer/plots/confusion_matrix.png
+      - evaluation/qat/integer/plots/pred_preview.png
+      - evaluation/qat/integer/plots/training_history.png

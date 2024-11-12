@@ -3,11 +3,11 @@ import sys
 from pathlib import Path
 from typing import List
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # Added this import
 import tensorflow as tf
 import yaml
 
-from utils.seed import set_seed
+from a_guide_to_mlops.utils.seed import set_seed
 
 
 def get_preview_plot(ds: tf.data.Dataset, labels: List[str]) -> plt.Figure:
@@ -65,17 +65,26 @@ def main() -> None:
     preview_plot.savefig(prepared_dataset_folder / "preview.png")
 
     # Normalize the data
-    normalization_layer = tf.keras.layers.Rescaling(
-        1.0 / 255
-    )
+    normalization_layer = tf.keras.layers.Rescaling(1.0 / 255)
     ds_train = ds_train.map(lambda x, y: (normalization_layer(x), y))
     ds_test = ds_test.map(lambda x, y: (normalization_layer(x), y))
 
     # Save the prepared dataset
     with open(prepared_dataset_folder / "labels.json", "w") as f:
         json.dump(labels, f)
-    tf.data.Dataset.save(ds_train, str(prepared_dataset_folder / "train"))
-    tf.data.Dataset.save(ds_test, str(prepared_dataset_folder / "test"))
+    train_path = prepared_dataset_folder / "train"
+    test_path = prepared_dataset_folder / "test"
+    tf.data.Dataset.save(ds_train, str(train_path))
+    tf.data.Dataset.save(ds_test, str(test_path))
+
+    # Debug: Confirm that the datasets can be loaded right after saving
+    print("Attempting to load saved datasets to verify...")
+    try:
+        ds_train_loaded = tf.data.Dataset.load(str(train_path))
+        ds_test_loaded = tf.data.Dataset.load(str(test_path))
+        print(f"Successfully loaded datasets from {train_path} and {test_path}")
+    except Exception as e:
+        print(f"Error loading datasets: {e}")
 
     print(f"\nDataset saved at {prepared_dataset_folder.absolute()}")
 

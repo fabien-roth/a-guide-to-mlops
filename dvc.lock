@@ -1,21 +1,17 @@
 schema: '2.0'
 stages:
   prepare:
-    cmd: python3.11 src/prepare.py data/raw data/prepared
+    cmd: python3.11 a_guide_to_mlops/prepare.py data/raw data/prepared
     deps:
+    - path: a_guide_to_mlops/prepare.py
+      hash: md5
+      md5: 4eebf010d346897091c0a342aece4940
+      size: 2513
     - path: data/raw
       hash: md5
       md5: 860922d0291235b2e67cef9202f8e9ab.dir
       size: 8998221
       nfiles: 1637
-    - path: src/prepare.py
-      hash: md5
-      md5: 4eebf010d346897091c0a342aece4940
-      size: 2513
-    - path: src/utils/seed.py
-      hash: md5
-      md5: 963a551c177450f50e4f11bd1a9ab2c7
-      size: 437
     params:
       params.yaml:
         prepare:
@@ -28,8 +24,8 @@ stages:
     outs:
     - path: data/prepared
       hash: md5
-      md5: 1b40991601905d02dc7f7d9352ad6c19.dir
-      size: 6750059
+      md5: 026a7ae539b2c66d61eaced1b7cf6f0e.dir
+      size: 6750060
       nfiles: 8
   train:
     cmd: python3.11 src/train.py data/prepared model

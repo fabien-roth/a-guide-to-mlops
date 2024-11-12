@@ -1,134 +1,121 @@
-import json
 import sys
-from pathlib import Path
-from typing import Tuple
-
-import numpy as np
 import tensorflow as tf
-import yaml
 import bentoml
-from PIL.Image import Image
+import json
+from pathlib import Path
+import numpy as np
 
-from utils.seed import set_seed
+from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, BASELINE_MODEL_DIR
+from a_guide_to_mlops.utils.seed import set_seed
+from a_guide_to_mlops.model.model_builder import get_model
+from a_guide_to_mlops.utils.config_loader import load_config
 
+def main():
+    # Initial debug prints
+    print("Script started...", flush=True)
+    print(f"Command Line Arguments: {sys.argv}", flush=True)
 
-def get_model(
-    image_shape: Tuple[int, int, int],
-    conv_size: int,
-    dense_size: int,
-    output_classes: int,
-) -> tf.keras.Model:
-    """Create a simple CNN model"""
-    model = tf.keras.models.Sequential(
-        [
-            tf.keras.layers.Conv2D(
-                conv_size, (3, 3), activation="relu", input_shape=image_shape
-            ),
-            tf.keras.layers.MaxPooling2D((3, 3)),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(dense_size, activation="relu"),
-            tf.keras.layers.Dense(output_classes),
-        ]
-    )
-    return model
-
-
-def main() -> None:
     if len(sys.argv) != 3:
-        print("Arguments error. Usage:\n")
-        print("\tpython3 train.py <prepared-dataset-folder> <model-folder>\n")
+        print("Arguments error. Usage:\n", flush=True)
+        print("\tpython train.py <prepared-dataset-folder> <model-folder>\n", flush=True)
         exit(1)
 
-    # Load parameters
-    prepare_params = yaml.safe_load(open("params.yaml"))["prepare"]
-    train_params = yaml.safe_load(open("params.yaml"))["train"]
+    # Load parameters from the configuration file
+    config = load_config()
+    prepare_params = config["prepare"]
+    train_params = config["train"]
 
-    prepared_dataset_folder = Path(sys.argv[1])
-    model_folder = Path(sys.argv[2])
+    # Set paths using the paths from config.py
+    prepared_dataset_folder = PREPARED_DATA_DIR  # This should correctly point to data/prepared
+    model_folder = BASELINE_MODEL_DIR
+    model_folder.mkdir(parents=True, exist_ok=True)
 
+    # Debug print statements
+    print(f"Prepared Dataset Folder Path: {prepared_dataset_folder}", flush=True)
+    print(f"Model Folder Path: {model_folder}", flush=True)
+
+    # Verify if 'train' folder exists and contains the necessary files
+    train_path = prepared_dataset_folder / "train"
+    if not train_path.exists():
+        print(f"Error: {train_path} does not exist.", flush=True)
+        exit(1)
+
+    if not (train_path / "dataset_spec.pb").exists():
+        print(f"Error: dataset_spec.pb not found at {train_path}.", flush=True)
+        exit(1)
+
+    # Set up model parameters
     image_size = prepare_params["image_size"]
     grayscale = prepare_params["grayscale"]
     image_shape = (*image_size, 1 if grayscale else 3)
 
-    seed = train_params["seed"]
-    lr = train_params["lr"]
-    epochs = train_params["epochs"]
-    conv_size = train_params["conv_size"]
-    dense_size = train_params["dense_size"]
-    output_classes = train_params["output_classes"]
+    # Set random seed for reproducibility
+    set_seed(train_params["seed"])
 
-    # Set seed for reproducibility
-    set_seed(seed)
+    # Load datasets
+    try:
+        print("Loading datasets...", flush=True)
+        ds_train = tf.data.Dataset.load(str(train_path))
+        ds_test = tf.data.Dataset.load(str(prepared_dataset_folder / "test"))
+        print("Datasets loaded successfully.", flush=True)
+    except Exception as e:
+        print(f"Error loading datasets: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
+        exit(1)
 
-    # Load data
-    ds_train = tf.data.Dataset.load(str(prepared_dataset_folder / "train"))
-    ds_test = tf.data.Dataset.load(str(prepared_dataset_folder / "test"))
+    # Load labels
+    labels_file_path = prepared_dataset_folder / "labels.json"
+    print(f"Loading labels from {labels_file_path}", flush=True)
 
-    labels = None
-    with open(prepared_dataset_folder / "labels.json") as f:
+    if not labels_file_path.exists():
+        print(f"Error: Labels file does not exist at {labels_file_path}", flush=True)
+        exit(1)
+
+    with open(labels_file_path) as f:
         labels = json.load(f)
 
-    # Define the model
-    model = get_model(image_shape, conv_size, dense_size, output_classes)
+    # Define model and compile it
+    print("Defining model...", flush=True)
+    model = get_model(image_shape, train_params["conv_size"], train_params["dense_size"], train_params["output_classes"])
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(lr),
+        optimizer=tf.keras.optimizers.Adam(train_params["lr"]),
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
+        metrics=[tf.keras.metrics.SparseCategoricalAccuracy()]
     )
     model.summary()
 
     # Train the model
-    model.fit(
-        ds_train,
-        epochs=epochs,
-        validation_data=ds_test,
-    )
+    print("Starting training...", flush=True)
+    history = model.fit(ds_train, epochs=train_params["epochs"], validation_data=ds_test)
 
-    # Save the model
-    model_folder.mkdir(parents=True, exist_ok=True)
-
-    def preprocess(x: Image):
-        # convert PIL image to tensor
-        x = x.convert('L' if grayscale else 'RGB')
-        x = x.resize(image_size)
-        x = np.array(x)
-        x = x / 255.0
-        # add batch dimension
-        x = np.expand_dims(x, axis=0)
-        return x
-
-    def postprocess(x: Image):
-        return {
-            "prediction": labels[tf.argmax(x, axis=-1).numpy()[0]],
-            "probabilities": {
-                labels[i]: prob
-                for i, prob in enumerate(tf.nn.softmax(x).numpy()[0].tolist())
-            },
-        }
-
-    # Save the model using BentoML to its model store
-    # https://docs.bentoml.com/en/latest/reference/frameworks/keras.html#bentoml.keras.save_model
+    # Save the trained model using BentoML
+    print("Saving the model...", flush=True)
     bentoml.keras.save_model(
-        "celestial_bodies_classifier_model",
+        "celestial_bodies_classifier_baseline",
         model,
         include_optimizer=True,
         custom_objects={
-            "preprocess": preprocess,
-            "postprocess": postprocess,
+            "preprocess": lambda x: (x / 255.0),
+            "postprocess": lambda x: labels[tf.argmax(x)],
         }
     )
 
-    # Export the model from the model store to the local model folder
+    # Export the trained model to the specified model folder
     bentoml.models.export_model(
-        "celestial_bodies_classifier_model:latest",
-        f"{model_folder}/celestial_bodies_classifier_model.bentomodel",
+        "celestial_bodies_classifier_baseline:latest",
+        str(model_folder / "celestial_bodies_classifier_baseline.bentomodel")
     )
 
-    # Save the model history
-    np.save(model_folder / "history.npy", model.history.history)
+    # Save the model history for evaluation purposes
+    np.save(model_folder / "history.npy", history.history)
 
-    print(f"\nModel saved at {model_folder.absolute()}")
-
+    print(f"\nModel and training history saved at {model_folder.absolute()}", flush=True)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}", flush=True)
+        import traceback
+        traceback.print_exc()

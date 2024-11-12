@@ -2,12 +2,13 @@ import json
 import sys
 from pathlib import Path
 from typing import List
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import bentoml
-
+from a_guide_to_mlops.utils.config import EVALUATION_DIR, PROJECT_ROOT
 
 def get_training_plot(model_history: dict) -> plt.Figure:
     """Plot the training and validation loss"""
@@ -25,10 +26,7 @@ def get_training_plot(model_history: dict) -> plt.Figure:
 
     return fig
 
-
-def get_pred_preview_plot(
-    model: tf.keras.Model, ds_test: tf.data.Dataset, labels: List[str]
-) -> plt.Figure:
+def get_pred_preview_plot(model: tf.keras.Model, ds_test: tf.data.Dataset, labels: List[str]) -> plt.Figure:
     """Plot a preview of the predictions"""
     fig = plt.figure(figsize=(10, 5), tight_layout=True)
     for images, label_idxs in ds_test.take(1):
@@ -56,15 +54,12 @@ def get_pred_preview_plot(
                 img[:, -1, 1] = 255
 
             plt.imshow(img)
-            plt.title(f"True: {true_label}\n" f"Pred: {pred_label}")
+            plt.title(f"True: {true_label}\nPred: {pred_label}")
             plt.axis("off")
 
     return fig
 
-
-def get_confusion_matrix_plot(
-    model: tf.keras.Model, ds_test: tf.data.Dataset, labels: List[str]
-) -> plt.Figure:
+def get_confusion_matrix_plot(model: tf.keras.Model, ds_test: tf.data.Dataset, labels: List[str]) -> plt.Figure:
     """Plot the confusion matrix"""
     fig = plt.figure(figsize=(6, 6), tight_layout=True)
     preds = model.predict(ds_test)
@@ -108,20 +103,21 @@ def get_confusion_matrix_plot(
 
     return fig
 
-
 def main() -> None:
     if len(sys.argv) != 3:
         print("Arguments error. Usage:\n")
-        print("\tpython3 evaluate.py <model-folder> <prepared-dataset-folder>\n")
+        print("\tpython evaluate.py <model-folder> <prepared-dataset-folder>\n")
         exit(1)
 
     model_folder = Path(sys.argv[1])
     prepared_dataset_folder = Path(sys.argv[2])
-    evaluation_folder = Path("evaluation")
-    plots_folder = Path("plots")
+
+    # Define the evaluation folder from the config
+    evaluation_folder = EVALUATION_DIR / model_folder.name
+    plots_folder = evaluation_folder / "plots"
 
     # Create folders
-    (evaluation_folder / plots_folder).mkdir(parents=True, exist_ok=True)
+    plots_folder.mkdir(parents=True, exist_ok=True)
 
     # Load files
     ds_test = tf.data.Dataset.load(str(prepared_dataset_folder / "test"))
@@ -148,20 +144,19 @@ def main() -> None:
 
     # Save training history plot
     fig = get_training_plot(model_history)
-    fig.savefig(evaluation_folder / plots_folder / "training_history.png")
+    fig.savefig(plots_folder / "training_history.png")
 
     # Save predictions preview plot
     fig = get_pred_preview_plot(model, ds_test, labels)
-    fig.savefig(evaluation_folder / plots_folder / "pred_preview.png")
+    fig.savefig(plots_folder / "pred_preview.png")
 
     # Save confusion matrix plot
     fig = get_confusion_matrix_plot(model, ds_test, labels)
-    fig.savefig(evaluation_folder / plots_folder / "confusion_matrix.png")
+    fig.savefig(plots_folder / "confusion_matrix.png")
 
     print(
         f"\nEvaluation metrics and plot files saved at {evaluation_folder.absolute()}"
     )
-
 
 if __name__ == "__main__":
     main()
