@@ -15,16 +15,6 @@ def main():
     print("Script started...", flush=True)
     print(f"Command Line Arguments: {sys.argv}", flush=True)
 
-    if len(sys.argv) != 3:
-        print("Arguments error. Usage:\n", flush=True)
-        print("\tpython train.py <prepared-dataset-folder> <model-folder>\n", flush=True)
-        exit(1)
-
-    # Load parameters from the configuration file
-    config = load_config()
-    prepare_params = config["prepare"]
-    train_params = config["train"]
-
     # Set paths using the paths from config.py
     prepared_dataset_folder = PREPARED_DATA_DIR  # This should correctly point to data/prepared
     model_folder = BASELINE_MODEL_DIR
@@ -33,6 +23,11 @@ def main():
     # Debug print statements
     print(f"Prepared Dataset Folder Path: {prepared_dataset_folder}", flush=True)
     print(f"Model Folder Path: {model_folder}", flush=True)
+
+    # Load parameters from the configuration file
+    config = load_config()
+    prepare_params = config["prepare"]
+    train_params = config["train"]
 
     # Verify if 'train' folder exists and contains the necessary files
     train_path = prepared_dataset_folder / "train"
@@ -89,10 +84,11 @@ def main():
     print("Starting training...", flush=True)
     history = model.fit(ds_train, epochs=train_params["epochs"], validation_data=ds_test)
 
-    # Save the trained model using BentoML
-    print("Saving the model...", flush=True)
+    # Save the trained model using BentoML with a unique name
+    print("Saving the model using BentoML...", flush=True)
+    bentoml_model_name = "celestial_bodies_classifier_baseline"
     bentoml.keras.save_model(
-        "celestial_bodies_classifier_baseline",
+        bentoml_model_name,
         model,
         include_optimizer=True,
         custom_objects={
@@ -102,9 +98,10 @@ def main():
     )
 
     # Export the trained model to the specified model folder
+    print("Exporting the model...", flush=True)
     bentoml.models.export_model(
-        "celestial_bodies_classifier_baseline:latest",
-        str(model_folder / "celestial_bodies_classifier_baseline.bentomodel")
+        f"{bentoml_model_name}:latest",
+        str(model_folder / "celestial_bodies_classifier_model.bentomodel")
     )
 
     # Save the model history for evaluation purposes

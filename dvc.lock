@@ -5,8 +5,8 @@ stages:
     deps:
     - path: a_guide_to_mlops/prepare.py
       hash: md5
-      md5: 4eebf010d346897091c0a342aece4940
-      size: 2513
+      md5: 8b52ed68fee3f0275dbbd48f66abed72
+      size: 3014
     - path: data/raw
       hash: md5
       md5: 860922d0291235b2e67cef9202f8e9ab.dir
@@ -24,8 +24,8 @@ stages:
     outs:
     - path: data/prepared
       hash: md5
-      md5: 026a7ae539b2c66d61eaced1b7cf6f0e.dir
-      size: 6750060
+      md5: e7fa400ac83a7577a990a6500e723792.dir
+      size: 6750061
       nfiles: 8
   train:
     cmd: python3.11 src/train.py data/prepared model
@@ -87,3 +87,387 @@ stages:
       hash: md5
       md5: d6309a5222da361dd56375412344a79b
       size: 37109
+  baseline_train:
+    cmd: python3.11 a_guide_to_mlops/train/baseline/train.py data/prepared model/baseline
+    deps:
+    - path: a_guide_to_mlops/train/baseline/train.py
+      hash: md5
+      md5: ef00ad3e24c5e4848260f5020b3f2d3f
+      size: 4201
+    - path: data/prepared
+      hash: md5
+      md5: e7fa400ac83a7577a990a6500e723792.dir
+      size: 6750061
+      nfiles: 8
+    params:
+      params.yaml:
+        train:
+          seed: 77
+          lr: 0.001
+          epochs: 10
+          conv_size: 64
+          dense_size: 128
+          output_classes: 11
+    outs:
+    - path: model/baseline/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: d4157b4f1e5cf1a1077595aa3306f367
+      size: 8266124
+  ptq_dynamic_train:
+    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_dynamic.py data/prepared
+      model/ptq/dynamic
+    deps:
+    - path: a_guide_to_mlops/train/ptq/train_ptq_dynamic.py
+      hash: md5
+      md5: 652932084a59f18ca0935edd866190ad
+      size: 4783
+    - path: data/prepared
+      hash: md5
+      md5: e7fa400ac83a7577a990a6500e723792.dir
+      size: 6750061
+      nfiles: 8
+    params:
+      params.yaml:
+        train:
+          seed: 77
+          lr: 0.001
+          epochs: 10
+          conv_size: 64
+          dense_size: 128
+          output_classes: 11
+    outs:
+    - path: model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: c896794b994e3daa1b71ee06cf7508dd
+      size: 8251544
+  ptq_float16_train:
+    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_float16.py data/prepared
+      model/ptq/float16
+    deps:
+    - path: a_guide_to_mlops/train/ptq/train_ptq_float16.py
+      hash: md5
+      md5: c5953fcfc1bf94141331b0c07ed578dd
+      size: 4459
+    - path: data/prepared
+      hash: md5
+      md5: e7fa400ac83a7577a990a6500e723792.dir
+      size: 6750061
+      nfiles: 8
+    params:
+      params.yaml:
+        train:
+          seed: 77
+          lr: 0.001
+          epochs: 10
+          conv_size: 64
+          dense_size: 128
+          output_classes: 11
+    outs:
+    - path: model/ptq/float16/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: 50e70bc11304bd68206ccd7d5c787604
+      size: 8251572
+  ptq_integer_train:
+    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_integer.py data/prepared
+      model/ptq/integer
+    deps:
+    - path: a_guide_to_mlops/train/ptq/train_ptq_integer.py
+      hash: md5
+      md5: 315bd63d76e9f4f7baae57f6acfa0102
+      size: 5500
+    - path: data/prepared
+      hash: md5
+      md5: e7fa400ac83a7577a990a6500e723792.dir
+      size: 6750061
+      nfiles: 8
+    params:
+      params.yaml:
+        train:
+          seed: 77
+          lr: 0.001
+          epochs: 10
+          conv_size: 64
+          dense_size: 128
+          output_classes: 11
+    outs:
+    - path: model/ptq/integer/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: 4d0ffabfb1ca45b3ebfd205f9419c798
+      size: 8267032
+  qat_dynamic_train:
+    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_dynamic.py data/prepared
+      model/qat/dynamic
+    deps:
+    - path: a_guide_to_mlops/train/qat/train_qat_dynamic.py
+      hash: md5
+      md5: da752ce1695528254e5831973c974d69
+      size: 7039
+    - path: data/prepared
+      hash: md5
+      md5: e7fa400ac83a7577a990a6500e723792.dir
+      size: 6750061
+      nfiles: 8
+    params:
+      params.yaml:
+        train:
+          seed: 77
+          lr: 0.001
+          epochs: 10
+          conv_size: 64
+          dense_size: 128
+          output_classes: 11
+    outs:
+    - path: model/qat/dynamic/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: c6f50c6f8e973a4b1c746725bb2d88f8
+      size: 594456
+  qat_float16_train:
+    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_float16.py data/prepared
+      model/qat/float16
+    deps:
+    - path: a_guide_to_mlops/train/qat/train_qat_float16.py
+      hash: md5
+      md5: 69608030da762c69b501e249a23889cf
+      size: 6839
+    - path: data/prepared
+      hash: md5
+      md5: e7fa400ac83a7577a990a6500e723792.dir
+      size: 6750061
+      nfiles: 8
+    params:
+      params.yaml:
+        train:
+          seed: 77
+          lr: 0.001
+          epochs: 10
+          conv_size: 64
+          dense_size: 128
+          output_classes: 11
+    outs:
+    - path: model/qat/float16/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: 56a4997dc3d43c87a66fd4bf835c82b8
+      size: 594460
+  qat_integer_train:
+    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_integer.py data/prepared
+      model/qat/integer
+    deps:
+    - path: a_guide_to_mlops/train/qat/train_qat_integer.py
+      hash: md5
+      md5: fd502f9ba8c94a5bcc805e2ba1ae8286
+      size: 5975
+    - path: data/prepared
+      hash: md5
+      md5: e7fa400ac83a7577a990a6500e723792.dir
+      size: 6750061
+      nfiles: 8
+    params:
+      params.yaml:
+        train:
+          seed: 77
+          lr: 0.001
+          epochs: 10
+          conv_size: 64
+          dense_size: 128
+          output_classes: 11
+    outs:
+    - path: model/qat/integer/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: 9dcca938b1070e6322f2f9cf3e935263
+      size: 677172
+  evaluate_baseline:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/baseline data/prepared
+    deps:
+    - path: a_guide_to_mlops/evaluate.py
+      hash: md5
+      md5: 142916c3e1430ecffc2c73dfdc8824b3
+      size: 7231
+    - path: model/baseline/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: d4157b4f1e5cf1a1077595aa3306f367
+      size: 8266124
+    outs:
+    - path: evaluation/baseline/metrics.json
+      hash: md5
+      md5: b9864b581c7dcbd1a305583c7ab0a2ed
+      size: 63
+    - path: evaluation/baseline/plots/confusion_matrix.png
+      hash: md5
+      md5: 538eebde289a063837375e9ea893decb
+      size: 41727
+    - path: evaluation/baseline/plots/pred_preview.png
+      hash: md5
+      md5: 6d1db42e2f4697538b54d985f7bfe211
+      size: 45767
+    - path: evaluation/baseline/plots/training_history.png
+      hash: md5
+      md5: d6309a5222da361dd56375412344a79b
+      size: 37109
+  evaluate_ptq_dynamic:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/dynamic data/prepared
+    deps:
+    - path: a_guide_to_mlops/evaluate.py
+      hash: md5
+      md5: 142916c3e1430ecffc2c73dfdc8824b3
+      size: 7231
+    - path: model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: c896794b994e3daa1b71ee06cf7508dd
+      size: 8251544
+    outs:
+    - path: evaluation/ptq/dynamic/metrics.json
+      hash: md5
+      md5: b9864b581c7dcbd1a305583c7ab0a2ed
+      size: 63
+    - path: evaluation/ptq/dynamic/plots/confusion_matrix.png
+      hash: md5
+      md5: 538eebde289a063837375e9ea893decb
+      size: 41727
+    - path: evaluation/ptq/dynamic/plots/pred_preview.png
+      hash: md5
+      md5: 6d1db42e2f4697538b54d985f7bfe211
+      size: 45767
+    - path: evaluation/ptq/dynamic/plots/training_history.png
+      hash: md5
+      md5: d6309a5222da361dd56375412344a79b
+      size: 37109
+  evaluate_ptq_float16:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/float16 data/prepared
+    deps:
+    - path: a_guide_to_mlops/evaluate.py
+      hash: md5
+      md5: 142916c3e1430ecffc2c73dfdc8824b3
+      size: 7231
+    - path: model/ptq/float16/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: 50e70bc11304bd68206ccd7d5c787604
+      size: 8251572
+    outs:
+    - path: evaluation/ptq/float16/metrics.json
+      hash: md5
+      md5: b9864b581c7dcbd1a305583c7ab0a2ed
+      size: 63
+    - path: evaluation/ptq/float16/plots/confusion_matrix.png
+      hash: md5
+      md5: 538eebde289a063837375e9ea893decb
+      size: 41727
+    - path: evaluation/ptq/float16/plots/pred_preview.png
+      hash: md5
+      md5: 6d1db42e2f4697538b54d985f7bfe211
+      size: 45767
+    - path: evaluation/ptq/float16/plots/training_history.png
+      hash: md5
+      md5: d6309a5222da361dd56375412344a79b
+      size: 37109
+  evaluate_ptq_integer:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/integer data/prepared
+    deps:
+    - path: a_guide_to_mlops/evaluate.py
+      hash: md5
+      md5: 142916c3e1430ecffc2c73dfdc8824b3
+      size: 7231
+    - path: model/ptq/integer/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: 4d0ffabfb1ca45b3ebfd205f9419c798
+      size: 8267032
+    outs:
+    - path: evaluation/ptq/integer/metrics.json
+      hash: md5
+      md5: b9864b581c7dcbd1a305583c7ab0a2ed
+      size: 63
+    - path: evaluation/ptq/integer/plots/confusion_matrix.png
+      hash: md5
+      md5: 538eebde289a063837375e9ea893decb
+      size: 41727
+    - path: evaluation/ptq/integer/plots/pred_preview.png
+      hash: md5
+      md5: 6d1db42e2f4697538b54d985f7bfe211
+      size: 45767
+    - path: evaluation/ptq/integer/plots/training_history.png
+      hash: md5
+      md5: d6309a5222da361dd56375412344a79b
+      size: 37109
+  evaluate_qat_dynamic:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/dynamic data/prepared
+    deps:
+    - path: a_guide_to_mlops/evaluate.py
+      hash: md5
+      md5: 142916c3e1430ecffc2c73dfdc8824b3
+      size: 7231
+    - path: model/qat/dynamic/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: c6f50c6f8e973a4b1c746725bb2d88f8
+      size: 594456
+    outs:
+    - path: evaluation/qat/dynamic/metrics.json
+      hash: md5
+      md5: b9864b581c7dcbd1a305583c7ab0a2ed
+      size: 63
+    - path: evaluation/qat/dynamic/plots/confusion_matrix.png
+      hash: md5
+      md5: 538eebde289a063837375e9ea893decb
+      size: 41727
+    - path: evaluation/qat/dynamic/plots/pred_preview.png
+      hash: md5
+      md5: 6d1db42e2f4697538b54d985f7bfe211
+      size: 45767
+    - path: evaluation/qat/dynamic/plots/training_history.png
+      hash: md5
+      md5: 0721d8a2cfcbf05ca83130ffd237e614
+      size: 37903
+  evaluate_qat_float16:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/float16 data/prepared
+    deps:
+    - path: a_guide_to_mlops/evaluate.py
+      hash: md5
+      md5: 142916c3e1430ecffc2c73dfdc8824b3
+      size: 7231
+    - path: model/qat/float16/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: 56a4997dc3d43c87a66fd4bf835c82b8
+      size: 594460
+    outs:
+    - path: evaluation/qat/float16/metrics.json
+      hash: md5
+      md5: b9864b581c7dcbd1a305583c7ab0a2ed
+      size: 63
+    - path: evaluation/qat/float16/plots/confusion_matrix.png
+      hash: md5
+      md5: 538eebde289a063837375e9ea893decb
+      size: 41727
+    - path: evaluation/qat/float16/plots/pred_preview.png
+      hash: md5
+      md5: 6d1db42e2f4697538b54d985f7bfe211
+      size: 45767
+    - path: evaluation/qat/float16/plots/training_history.png
+      hash: md5
+      md5: 0721d8a2cfcbf05ca83130ffd237e614
+      size: 37903
+  evaluate_qat_integer:
+    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/integer data/prepared
+    deps:
+    - path: a_guide_to_mlops/evaluate.py
+      hash: md5
+      md5: 142916c3e1430ecffc2c73dfdc8824b3
+      size: 7231
+    - path: model/qat/integer/celestial_bodies_classifier_model.bentomodel
+      hash: md5
+      md5: 9dcca938b1070e6322f2f9cf3e935263
+      size: 677172
+    outs:
+    - path: evaluation/qat/integer/metrics.json
+      hash: md5
+      md5: b9864b581c7dcbd1a305583c7ab0a2ed
+      size: 63
+    - path: evaluation/qat/integer/plots/confusion_matrix.png
+      hash: md5
+      md5: 538eebde289a063837375e9ea893decb
+      size: 41727
+    - path: evaluation/qat/integer/plots/pred_preview.png
+      hash: md5
+      md5: 6d1db42e2f4697538b54d985f7bfe211
+      size: 45767
+    - path: evaluation/qat/integer/plots/training_history.png
+      hash: md5
+      md5: 0721d8a2cfcbf05ca83130ffd237e614
+      size: 37903

@@ -3,8 +3,9 @@ import tensorflow as tf
 import bentoml
 import json
 from pathlib import Path
+import numpy as np
 
-from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, PTQ_MODEL_DIR
+from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, PTQ_MODEL_FLOAT16_DIR
 from a_guide_to_mlops.utils.config_loader import load_config
 from a_guide_to_mlops.utils.preprocessing import preprocess, postprocess
 from a_guide_to_mlops.utils.seed import set_seed
@@ -20,7 +21,7 @@ def main():
 
     # Paths from config.py
     prepared_dataset_folder = PREPARED_DATA_DIR
-    model_folder = PTQ_MODEL_DIR
+    model_folder = PTQ_MODEL_FLOAT16_DIR
     model_folder.mkdir(parents=True, exist_ok=True)
 
     # Debug print statements for directories
@@ -49,7 +50,14 @@ def main():
 
     # Load labels
     labels = None
-    with open(prepared_dataset_folder / "labels.json") as f:
+    labels_file_path = prepared_dataset_folder / "labels.json"
+    print(f"Loading labels from {labels_file_path}", flush=True)
+
+    if not labels_file_path.exists():
+        print(f"Error: Labels file does not exist at {labels_file_path}", flush=True)
+        exit(1)
+
+    with open(labels_file_path) as f:
         labels = json.load(f)
 
     # Define model
@@ -75,11 +83,41 @@ def main():
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
     quantized_model = converter.convert()
 
-    # Save the quantized TFLite model
-    with open(model_folder / "celestial_bodies_classifier_model_ptq_float16.tflite", "wb") as f:
+    # Save the quantized TFLite model separately
+    tflite_model_path = model_folder / "celestial_bodies_classifier_model_float16.tflite"
+    with open(tflite_model_path, "wb") as f:
         f.write(quantized_model)
 
-    print(f"\nModel and training history saved at {model_folder.absolute()}", flush=True)
+    # Save the trained model using BentoML with a unique name for tracking
+    print("Saving the model using BentoML...", flush=True)
+    bentoml_model_name = "celestial_bodies_classifier_ptq_float16"  # Unique name for tracking the specific variant
+    bentoml.keras.save_model(
+        bentoml_model_name,
+        model,
+        include_optimizer=True,
+        custom_objects={
+            "preprocess": lambda x: (x / 255.0),
+            "postprocess": lambda x: labels[tf.argmax(x)],
+        }
+    )
+
+    # Export the BentoML model to the specified folder for deployment
+    print("Exporting the model...", flush=True)
+    bentoml.models.export_model(
+        f"{bentoml_model_name}:latest",
+        str(model_folder / "celestial_bodies_classifier_model.bentomodel")
+    )
+
+    # Save model training history for evaluation purposes
+    history_path = model_folder / "history.npy"
+    np.save(history_path, history.history)
+
+    print(f"\nModel, TFLite model, and training history saved at {model_folder.absolute()}", flush=True)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}", flush=True)
+        import traceback
+        traceback.print_exc()

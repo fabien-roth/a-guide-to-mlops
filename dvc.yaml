@@ -17,7 +17,7 @@ stages:
     params:
       - train
     outs:
-      - model/baseline
+      - model/baseline/celestial_bodies_classifier_model.bentomodel
 
   ptq_dynamic_train:
     cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_dynamic.py data/prepared model/ptq/dynamic
@@ -27,7 +27,7 @@ stages:
     params:
       - train
     outs:
-      - model/ptq/dynamic
+      - model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
 
   ptq_float16_train:
     cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_float16.py data/prepared model/ptq/float16
@@ -37,7 +37,7 @@ stages:
     params:
       - train
     outs:
-      - model/ptq/float16
+      - model/ptq/float16/celestial_bodies_classifier_model.bentomodel
 
   ptq_integer_train:
     cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_integer.py data/prepared model/ptq/integer
@@ -47,7 +47,7 @@ stages:
     params:
       - train
     outs:
-      - model/ptq/integer
+      - model/ptq/integer/celestial_bodies_classifier_model.bentomodel
 
   qat_dynamic_train:
     cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_dynamic.py data/prepared model/qat/dynamic
@@ -57,7 +57,7 @@ stages:
     params:
       - train
     outs:
-      - model/qat/dynamic
+      - model/qat/dynamic/celestial_bodies_classifier_model.bentomodel
 
   qat_float16_train:
     cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_float16.py data/prepared model/qat/float16
@@ -67,7 +67,7 @@ stages:
     params:
       - train
     outs:
-      - model/qat/float16
+      - model/qat/float16/celestial_bodies_classifier_model.bentomodel
 
   qat_integer_train:
     cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_integer.py data/prepared model/qat/integer
@@ -77,12 +77,12 @@ stages:
     params:
       - train
     outs:
-      - model/qat/integer
+      - model/qat/integer/celestial_bodies_classifier_model.bentomodel
 
   evaluate_baseline:
     cmd: python3.11 a_guide_to_mlops/evaluate.py model/baseline data/prepared
     deps:
-      - model/baseline
+      - model/baseline/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
     metrics:
       - evaluation/baseline/metrics.json
@@ -94,7 +94,7 @@ stages:
   evaluate_ptq_dynamic:
     cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/dynamic data/prepared
     deps:
-      - model/ptq/dynamic
+      - model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
     metrics:
       - evaluation/ptq/dynamic/metrics.json
@@ -106,7 +106,7 @@ stages:
   evaluate_ptq_float16:
     cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/float16 data/prepared
     deps:
-      - model/ptq/float16
+      - model/ptq/float16/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
     metrics:
       - evaluation/ptq/float16/metrics.json
@@ -118,7 +118,7 @@ stages:
   evaluate_ptq_integer:
     cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/integer data/prepared
     deps:
-      - model/ptq/integer
+      - model/ptq/integer/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
     metrics:
       - evaluation/ptq/integer/metrics.json
@@ -130,7 +130,7 @@ stages:
   evaluate_qat_dynamic:
     cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/dynamic data/prepared
     deps:
-      - model/qat/dynamic
+      - model/qat/dynamic/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
     metrics:
       - evaluation/qat/dynamic/metrics.json
@@ -142,7 +142,7 @@ stages:
   evaluate_qat_float16:
     cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/float16 data/prepared
     deps:
-      - model/qat/float16
+      - model/qat/float16/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
     metrics:
       - evaluation/qat/float16/metrics.json
@@ -154,7 +154,7 @@ stages:
   evaluate_qat_integer:
     cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/integer data/prepared
     deps:
-      - model/qat/integer
+      - model/qat/integer/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
     metrics:
       - evaluation/qat/integer/metrics.json

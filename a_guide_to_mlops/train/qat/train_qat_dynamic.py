@@ -1,3 +1,4 @@
+# Import statements
 import sys
 from pathlib import Path
 import json
@@ -8,7 +9,9 @@ import bentoml
 import onnx
 from onnxruntime.quantization import quantize_dynamic, QuantType
 
-from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, QAT_MODEL_DIR
+import numpy as np
+
+from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, QAT_MODEL_DYNAMIC_DIR
 from a_guide_to_mlops.utils.config_loader import load_config
 from a_guide_to_mlops.utils.seed import set_seed
 from a_guide_to_mlops.model.model_builder import get_model
@@ -23,7 +26,7 @@ def main():
 
     # Set paths using config.py
     prepared_dataset_folder = PREPARED_DATA_DIR
-    model_folder = QAT_MODEL_DIR
+    model_folder = QAT_MODEL_DYNAMIC_DIR
     model_folder.mkdir(parents=True, exist_ok=True)
 
     # Debug print statements for directories
@@ -52,8 +55,10 @@ def main():
 
     # Load labels
     try:
-        with open(prepared_dataset_folder / "labels.json") as f:
+        labels_file_path = prepared_dataset_folder / "labels.json"
+        with open(labels_file_path) as f:
             labels = json.load(f)
+        print(f"Labels loaded from {labels_file_path}", flush=True)
     except Exception as e:
         print(f"Error loading labels file: {e}", flush=True)
         exit(1)
@@ -85,11 +90,21 @@ def main():
     # Train the quantized model
     try:
         print("Starting QAT training...", flush=True)
-        quantize_model.fit(ds_train, epochs=train_params["epochs"], validation_data=ds_test)
+        history = quantize_model.fit(ds_train, epochs=train_params["epochs"], validation_data=ds_test)
     except Exception as e:
         print(f"Error during training: {e}", flush=True)
         import traceback
         traceback.print_exc()
+        exit(1)
+
+    # Save the training history as `.npy` file
+    history_path = model_folder / "history.npy"
+    try:
+        with open(history_path, "wb") as f:
+            np.save(f, history.history)
+        print(f"Training history saved at {history_path}", flush=True)
+    except Exception as e:
+        print(f"Error saving training history: {e}", flush=True)
         exit(1)
 
     # Save the model in `.keras` format for backup
@@ -131,8 +146,9 @@ def main():
     try:
         print("Saving ONNX model with BentoML...", flush=True)
         quantized_model = onnx.load(str(quantized_model_path))
+        bentoml_model_name = "celestial_bodies_classifier_qat_dynamic"  # Unique name for tracking the specific variant
         bentoml.onnx.save_model(
-            "celestial_bodies_classifier_model_qat_dynamic",
+            bentoml_model_name,
             quantized_model,
             signatures={"run": {"batchable": True}},
             labels={"model": "quantized", "framework": "onnx"},
@@ -141,6 +157,19 @@ def main():
         print("Quantized ONNX model successfully saved to BentoML store.", flush=True)
     except Exception as e:
         print("Failed to save model with BentoML. Error:", str(e), flush=True)
+        import traceback
+        traceback.print_exc()
+
+    # Export the BentoML model to the specified folder for deployment
+    try:
+        print("Exporting the BentoML model...", flush=True)
+        bentoml.models.export_model(
+            f"{bentoml_model_name}:latest",
+            str(model_folder / "celestial_bodies_classifier_model.bentomodel")
+        )
+        print(f"BentoML model exported at {model_folder}", flush=True)
+    except Exception as e:
+        print("Failed to export the BentoML model. Error:", str(e), flush=True)
 
 if __name__ == "__main__":
     main()

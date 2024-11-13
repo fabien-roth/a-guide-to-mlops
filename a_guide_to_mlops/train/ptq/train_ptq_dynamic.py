@@ -3,8 +3,9 @@ from pathlib import Path
 import tensorflow as tf
 import bentoml
 import json
+import numpy as np
 
-from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, PTQ_MODEL_DIR
+from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, PTQ_MODEL_DYNAMIC_DIR
 from a_guide_to_mlops.utils.config_loader import load_config
 from a_guide_to_mlops.utils.preprocessing import preprocess, postprocess
 from a_guide_to_mlops.utils.seed import set_seed
@@ -13,14 +14,14 @@ from a_guide_to_mlops.model.model_builder import get_model
 def main():
     print("Script started...", flush=True)
 
-    # Load parameters
+    # Load parameters from the configuration file
     config = load_config()
     prepare_params = config["prepare"]
     train_params = config["train"]
 
-    # Model paths from the config
+    # Set paths using paths from config.py
     prepared_dataset_folder = PREPARED_DATA_DIR
-    model_folder = PTQ_MODEL_DIR
+    model_folder = PTQ_MODEL_DYNAMIC_DIR
     model_folder.mkdir(parents=True, exist_ok=True)
 
     # Debug print statements
@@ -37,7 +38,7 @@ def main():
         print(f"Error: dataset_spec.pb not found at {train_path}.", flush=True)
         exit(1)
 
-    # Model parameters
+    # Set up model parameters
     image_size = prepare_params["image_size"]
     grayscale = prepare_params["grayscale"]
     image_shape = (*image_size, 1 if grayscale else 3)
@@ -59,14 +60,21 @@ def main():
 
     # Load labels
     labels = None
-    with open(prepared_dataset_folder / "labels.json") as f:
+    labels_file_path = prepared_dataset_folder / "labels.json"
+    print(f"Loading labels from {labels_file_path}", flush=True)
+
+    if not labels_file_path.exists():
+        print(f"Error: Labels file does not exist at {labels_file_path}", flush=True)
+        exit(1)
+
+    with open(labels_file_path) as f:
         labels = json.load(f)
 
     # Define model
     print("Defining model...", flush=True)
     model = get_model(image_shape, train_params["conv_size"], train_params["dense_size"], train_params["output_classes"])
 
-    # Compile model
+    # Compile the model
     model.compile(
         optimizer=tf.keras.optimizers.Adam(train_params["lr"]),
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -74,7 +82,7 @@ def main():
     )
     model.summary()
 
-    # Train model
+    # Train the model
     print("Starting training...", flush=True)
     history = model.fit(ds_train, epochs=train_params["epochs"], validation_data=ds_test)
 
@@ -85,10 +93,40 @@ def main():
     quantized_model = converter.convert()
 
     # Save the quantized TFLite model
-    with open(model_folder / "celestial_bodies_classifier_model_ptq_dynamic.tflite", "wb") as f:
+    tflite_model_path = model_folder / "celestial_bodies_classifier_model_dynamic.tflite"
+    with open(tflite_model_path, "wb") as f:
         f.write(quantized_model)
 
-    print(f"\nModel and training history saved at {model_folder.absolute()}", flush=True)
+    # Save the trained model using BentoML with a unique name for tracking
+    print("Saving the model using BentoML...", flush=True)
+    bentoml_model_name = "celestial_bodies_classifier_ptq_dynamic"  # Unique name to identify this variant
+    bentoml.keras.save_model(
+        bentoml_model_name,
+        model,
+        include_optimizer=True,
+        custom_objects={
+            "preprocess": lambda x: (x / 255.0),
+            "postprocess": lambda x: labels[tf.argmax(x)],
+        }
+    )
+
+    # Export the BentoML model to the specified folder for deployment
+    print("Exporting the model...", flush=True)
+    bentoml.models.export_model(
+        f"{bentoml_model_name}:latest",
+        str(model_folder / "celestial_bodies_classifier_model.bentomodel")
+    )
+
+    # Save model training history for evaluation purposes
+    history_path = model_folder / "history.npy"
+    np.save(history_path, history.history)
+
+    print(f"\nModel, TFLite model, and training history saved at {model_folder.absolute()}", flush=True)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}", flush=True)
+        import traceback
+        traceback.print_exc()

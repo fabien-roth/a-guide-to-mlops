@@ -10,6 +10,6 @@ docker:
   python_version: "3.11"
 artifacts:
   - name: "qat_dynamic_model"
-    path: "model/qat/celestial_bodies_classifier_model_qat_dynamic.tflite"
+    path: "model/qat/dynamic/celestial_bodies_classifier_model.bentomodel"
 labels:
   quantization: "qat_dynamic"

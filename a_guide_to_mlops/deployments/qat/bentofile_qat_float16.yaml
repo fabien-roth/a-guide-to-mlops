@@ -10,6 +10,6 @@ docker:
   python_version: "3.11"
 artifacts:
   - name: "qat_float16_model"
-    path: "model/qat/celestial_bodies_classifier_model_qat_float16.tflite"
+    path: "model/qat/float16/celestial_bodies_classifier_model.bentomodel"
 labels:
   quantization: "qat_float16"

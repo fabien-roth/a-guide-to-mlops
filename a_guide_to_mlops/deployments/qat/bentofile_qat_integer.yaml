@@ -10,6 +10,6 @@ docker:
   python_version: "3.11"
 artifacts:
   - name: "qat_integer_model"
-    path: "model/qat/celestial_bodies_classifier_model_qat_integer.tflite"
+    path: "model/qat/integer/celestial_bodies_classifier_model.bentomodel"
 labels:
   quantization: "qat_integer"

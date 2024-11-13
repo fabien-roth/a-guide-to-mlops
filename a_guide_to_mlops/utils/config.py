@@ -15,7 +15,13 @@ TRAIN_DIR = PROJECT_ROOT / "a_guide_to_mlops" / "train"
 # Specific folders for different stages
 BASELINE_MODEL_DIR = MODEL_DIR / "baseline"
 PTQ_MODEL_DIR = MODEL_DIR / "ptq"
+PTQ_MODEL_DYNAMIC_DIR = PTQ_MODEL_DIR / "dynamic"
+PTQ_MODEL_FLOAT16_DIR = PTQ_MODEL_DIR / "float16"
+PTQ_MODEL_INTEGER_DIR = PTQ_MODEL_DIR / "integer"
 QAT_MODEL_DIR = MODEL_DIR / "qat"
+QAT_MODEL_DYNAMIC_DIR = QAT_MODEL_DIR / "dynamic"
+QAT_MODEL_FLOAT16_DIR = QAT_MODEL_DIR / "float16"
+QAT_MODEL_INTEGER_DIR = QAT_MODEL_DIR / "integer"
 
 # Environment variables (useful for overriding defaults, especially in different environments)
 BASE_DIR = Path(os.getenv("BASE_DIR", PROJECT_ROOT))
