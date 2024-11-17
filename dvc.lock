@@ -1,7 +1,7 @@
 schema: '2.0'
 stages:
   prepare:
-    cmd: python3.11 a_guide_to_mlops/prepare.py data/raw data/prepared
+    cmd: python3.11 -m a_guide_to_mlops.prepare data/raw data/prepared
     deps:
     - path: a_guide_to_mlops/prepare.py
       hash: md5
@@ -24,7 +24,7 @@ stages:
     outs:
     - path: data/prepared
       hash: md5
-      md5: e7fa400ac83a7577a990a6500e723792.dir
+      md5: ba36ff2d157a4c70b45540295cffa5ab.dir
       size: 6750061
       nfiles: 8
   train:
@@ -88,7 +88,7 @@ stages:
       md5: d6309a5222da361dd56375412344a79b
       size: 37109
   baseline_train:
-    cmd: python3.11 a_guide_to_mlops/train/baseline/train.py data/prepared model/baseline
+    cmd: python3.11 -m a_guide_to_mlops.train.baseline.train data/prepared model/baseline
     deps:
     - path: a_guide_to_mlops/train/baseline/train.py
       hash: md5
@@ -96,7 +96,7 @@ stages:
       size: 4201
     - path: data/prepared
       hash: md5
-      md5: e7fa400ac83a7577a990a6500e723792.dir
+      md5: ba36ff2d157a4c70b45540295cffa5ab.dir
       size: 6750061
       nfiles: 8
     params:
@@ -111,10 +111,10 @@ stages:
     outs:
     - path: model/baseline/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: d4157b4f1e5cf1a1077595aa3306f367
-      size: 8266124
+      md5: 11b3a4caafb8e4e6729d74dd9a97da37
+      size: 8264348
   ptq_dynamic_train:
-    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_dynamic.py data/prepared
+    cmd: python3.11 -m a_guide_to_mlops.train.ptq.train_ptq_dynamic data/prepared
       model/ptq/dynamic
     deps:
     - path: a_guide_to_mlops/train/ptq/train_ptq_dynamic.py
@@ -123,7 +123,7 @@ stages:
       size: 4783
     - path: data/prepared
       hash: md5
-      md5: e7fa400ac83a7577a990a6500e723792.dir
+      md5: ba36ff2d157a4c70b45540295cffa5ab.dir
       size: 6750061
       nfiles: 8
     params:
@@ -138,8 +138,8 @@ stages:
     outs:
     - path: model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: c896794b994e3daa1b71ee06cf7508dd
-      size: 8251544
+      md5: 4a9dde5f0b262144aa48ce257f39932a
+      size: 8265808
   ptq_float16_train:
     cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_float16.py data/prepared
       model/ptq/float16

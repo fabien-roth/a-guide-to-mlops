@@ -1,6 +1,6 @@
 stages:
   prepare:
-    cmd: python3.11 a_guide_to_mlops/prepare.py data/raw data/prepared
+    cmd: python3.11 -m a_guide_to_mlops.prepare data/raw data/prepared
     deps:
       - data/raw
       - a_guide_to_mlops/prepare.py
@@ -10,7 +10,7 @@ stages:
       - data/prepared
 
   baseline_train:
-    cmd: python3.11 a_guide_to_mlops/train/baseline/train.py data/prepared model/baseline
+    cmd: python3.11 -m a_guide_to_mlops.train.baseline.train data/prepared model/baseline
     deps:
       - data/prepared
       - a_guide_to_mlops/train/baseline/train.py
@@ -20,7 +20,7 @@ stages:
       - model/baseline/celestial_bodies_classifier_model.bentomodel
 
   ptq_dynamic_train:
-    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_dynamic.py data/prepared model/ptq/dynamic
+    cmd: python3.11 -m a_guide_to_mlops.train.ptq.train_ptq_dynamic data/prepared model/ptq/dynamic
     deps:
       - data/prepared
       - a_guide_to_mlops/train/ptq/train_ptq_dynamic.py
@@ -30,7 +30,7 @@ stages:
       - model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
 
   ptq_float16_train:
-    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_float16.py data/prepared model/ptq/float16
+    cmd: python3.11 -m a_guide_to_mlops.train.ptq.train_ptq_float16 data/prepared model/ptq/float16
     deps:
       - data/prepared
       - a_guide_to_mlops/train/ptq/train_ptq_float16.py
@@ -40,7 +40,7 @@ stages:
       - model/ptq/float16/celestial_bodies_classifier_model.bentomodel
 
   ptq_integer_train:
-    cmd: python3.11 a_guide_to_mlops/train/ptq/train_ptq_integer.py data/prepared model/ptq/integer
+    cmd: python3.11 -m a_guide_to_mlops.train.ptq.train_ptq_integer data/prepared model/ptq/integer
     deps:
       - data/prepared
       - a_guide_to_mlops/train/ptq/train_ptq_integer.py
@@ -49,38 +49,8 @@ stages:
     outs:
       - model/ptq/integer/celestial_bodies_classifier_model.bentomodel
 
-  qat_dynamic_train:
-    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_dynamic.py data/prepared model/qat/dynamic
-    deps:
-      - data/prepared
-      - a_guide_to_mlops/train/qat/train_qat_dynamic.py
-    params:
-      - train
-    outs:
-      - model/qat/dynamic/celestial_bodies_classifier_model.bentomodel
-
-  qat_float16_train:
-    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_float16.py data/prepared model/qat/float16
-    deps:
-      - data/prepared
-      - a_guide_to_mlops/train/qat/train_qat_float16.py
-    params:
-      - train
-    outs:
-      - model/qat/float16/celestial_bodies_classifier_model.bentomodel
-
-  qat_integer_train:
-    cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_integer.py data/prepared model/qat/integer
-    deps:
-      - data/prepared
-      - a_guide_to_mlops/train/qat/train_qat_integer.py
-    params:
-      - train
-    outs:
-      - model/qat/integer/celestial_bodies_classifier_model.bentomodel
-
   evaluate_baseline:
-    cmd: python3.11 a_guide_to_mlops/evaluate.py model/baseline data/prepared
+    cmd: python3.11 -m a_guide_to_mlops.evaluate model/baseline data/prepared
     deps:
       - model/baseline/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
@@ -92,7 +62,7 @@ stages:
       - evaluation/baseline/plots/training_history.png
 
   evaluate_ptq_dynamic:
-    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/dynamic data/prepared
+    cmd: python3.11 -m a_guide_to_mlops.evaluate model/ptq/dynamic data/prepared
     deps:
       - model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
@@ -104,7 +74,7 @@ stages:
       - evaluation/ptq/dynamic/plots/training_history.png
 
   evaluate_ptq_float16:
-    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/float16 data/prepared
+    cmd: python3.11 -m a_guide_to_mlops.evaluate model/ptq/float16 data/prepared
     deps:
       - model/ptq/float16/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
@@ -116,7 +86,7 @@ stages:
       - evaluation/ptq/float16/plots/training_history.png
 
   evaluate_ptq_integer:
-    cmd: python3.11 a_guide_to_mlops/evaluate.py model/ptq/integer data/prepared
+    cmd: python3.11 -m a_guide_to_mlops.evaluate model/ptq/integer data/prepared
     deps:
       - model/ptq/integer/celestial_bodies_classifier_model.bentomodel
       - a_guide_to_mlops/evaluate.py
@@ -126,39 +96,3 @@ stages:
       - evaluation/ptq/integer/plots/confusion_matrix.png
       - evaluation/ptq/integer/plots/pred_preview.png
       - evaluation/ptq/integer/plots/training_history.png
-
-  evaluate_qat_dynamic:
-    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/dynamic data/prepared
-    deps:
-      - model/qat/dynamic/celestial_bodies_classifier_model.bentomodel
-      - a_guide_to_mlops/evaluate.py
-    metrics:
-      - evaluation/qat/dynamic/metrics.json
-    plots:
-      - evaluation/qat/dynamic/plots/confusion_matrix.png
-      - evaluation/qat/dynamic/plots/pred_preview.png
-      - evaluation/qat/dynamic/plots/training_history.png
-
-  evaluate_qat_float16:
-    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/float16 data/prepared
-    deps:
-      - model/qat/float16/celestial_bodies_classifier_model.bentomodel
-      - a_guide_to_mlops/evaluate.py
-    metrics:
-      - evaluation/qat/float16/metrics.json
-    plots:
-      - evaluation/qat/float16/plots/confusion_matrix.png
-      - evaluation/qat/float16/plots/pred_preview.png
-      - evaluation/qat/float16/plots/training_history.png
-
-  evaluate_qat_integer:
-    cmd: python3.11 a_guide_to_mlops/evaluate.py model/qat/integer data/prepared
-    deps:
-      - model/qat/integer/celestial_bodies_classifier_model.bentomodel
-      - a_guide_to_mlops/evaluate.py
-    metrics:
-      - evaluation/qat/integer/metrics.json
-    plots:
-      - evaluation/qat/integer/plots/confusion_matrix.png
-      - evaluation/qat/integer/plots/pred_preview.png
-      - evaluation/qat/integer/plots/training_history.png
