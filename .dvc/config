@@ -1,4 +1,5 @@
 [core]
     remote = data
+    autostage = true
 ['remote "data"']
     url = gs://mlops-bucket-rotf
