@@ -29,28 +29,36 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-      # Step 3: Setup Python
+      # Step 3: Add debugging to verify SSH configuration
+      - name: Debug SSH Configuration
+        run: |
+          echo "Listing ~/.ssh contents:"
+          ls -la ~/.ssh
+          echo "Testing SSH connection to GitHub:"
+          ssh -T git@github.com || echo "SSH failed. Please check your key."
+
+      # Step 4: Setup Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: pip
 
-      # Step 4: Install dependencies (this triggers git clone)
+      # Step 5: Install dependencies (This triggers git clone)
       - name: Install dependencies
         run: pip install --requirement requirements-freeze.txt
 
-      # Step 5: Authenticate with Google Cloud (if needed for DVC)
+      # Step 6: Authenticate with Google Cloud (if needed for DVC)
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}'
 
-      # Step 6: Train the model using DVC
+      # Step 7: Train the model using DVC
       - name: Train model
         run: dvc repro --pull
 
-      # Step 7: Generate and publish CML report
+      # Step 8: Generate and publish CML report
       - name: Setup CML
         if: github.event_name == 'pull_request'
         uses: iterative/setup-cml@v2
