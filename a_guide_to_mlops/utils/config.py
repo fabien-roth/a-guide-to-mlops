@@ -31,14 +31,16 @@ RAW_DATA_DIR = DATA_DIR / "raw"
 #PREPARED_DATA_DIR = DATA_DIR / "prepared"
 PREPARED_DATA_DIR = PROJECT_ROOT / "data" / "prepared"
 
+#Model name
+BENTOML_MODEL_NAME = "celestial_bodies_classifier_model.bentomodel"
 
 # Model paths (for different quantization types)
-BASELINE_MODEL_PATH = BASELINE_MODEL_DIR / "celestial_bodies_classifier_baseline.tflite"
-PTQ_DYNAMIC_MODEL_PATH = PTQ_MODEL_DIR / "celestial_bodies_classifier_model_ptq_dynamic.tflite"
-PTQ_FLOAT16_MODEL_PATH = PTQ_MODEL_DIR / "celestial_bodies_classifier_model_ptq_float16.tflite"
-PTQ_INTEGER_MODEL_PATH = PTQ_MODEL_DIR / "celestial_bodies_classifier_model_ptq_integer.tflite"
-QAT_DYNAMIC_MODEL_PATH = QAT_MODEL_DIR / "celestial_bodies_classifier_model_qat_dynamic.tflite"
-QAT_INTEGER_MODEL_PATH = QAT_MODEL_DIR / "celestial_bodies_classifier_model_qat_integer.tflite"
+BASELINE_MODEL_PATH = BASELINE_MODEL_DIR / BENTOML_MODEL_NAME
+PTQ_DYNAMIC_MODEL_PATH = PTQ_MODEL_DIR / BENTOML_MODEL_NAME
+PTQ_FLOAT16_MODEL_PATH = PTQ_MODEL_DIR / BENTOML_MODEL_NAME
+PTQ_INTEGER_MODEL_PATH = PTQ_MODEL_DIR / BENTOML_MODEL_NAME
+QAT_DYNAMIC_MODEL_PATH = QAT_MODEL_DIR / BENTOML_MODEL_NAME
+QAT_INTEGER_MODEL_PATH = QAT_MODEL_DIR / BENTOML_MODEL_NAME
 
 # Evaluation paths
 EVALUATION_BASELINE_DIR = EVALUATION_DIR / "baseline"

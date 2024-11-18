@@ -214,7 +214,10 @@ ruamel.yaml.clib==0.2.12
 rules==2.2
 s3transfer==0.10.3
 schema==0.7.7
+scikit-learn==1.5.2
+scipy==1.14.1
 scmrepo==3.3.8
+seaborn==0.13.2
 semver==3.0.2
 sentry-sdk==2.18.0
 shellingham==1.5.4
@@ -234,6 +237,7 @@ tensorflow==2.17.0
 tensorflow-io-gcs-filesystem==0.37.1
 tensorflow-model-optimization==0.8.0
 termcolor==2.5.0
+threadpoolctl==3.5.0
 tomli_w==1.1.0
 tomlkit==0.13.2
 tornado==6.4.1
