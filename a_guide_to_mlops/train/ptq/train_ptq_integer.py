@@ -4,6 +4,10 @@ import bentoml
 import json
 from pathlib import Path
 import numpy as np
+import os
+
+# Ajouter le répertoire principal du projet
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, PTQ_MODEL_INTEGER_DIR
 from a_guide_to_mlops.utils.seed import set_seed
