@@ -1,0 +1,19 @@
+# Global configuration
+global:
+  scrape_interval: 15s  # Set the scrape interval to every 15 seconds.
+  evaluation_interval: 15s  # Evaluate rules every 15 seconds.
+
+# Scrape configurations
+scrape_configs:
+  # Scrape Prometheus server itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Scrape CelestialBodiesClassifierCanaryService
+  - job_name: "celestial_bodies_service"
+    static_configs:
+      - targets: ["localhost:8001"]  # Match the METRICS_PORT in serve.py
+        labels:
+          service: "celestial_bodies_service"
+
