@@ -1,0 +1,21 @@
+## Python
+.venv/
+.dvc/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+build/
+
+## DVC
+
+# DVC plots
+dvc_plots
+
+# macOS metadata files
+.DS_Store
+
+/model
+
+# Label Studio
+extra-data/
+

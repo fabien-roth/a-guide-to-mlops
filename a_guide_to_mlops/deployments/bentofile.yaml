@@ -1,0 +1,25 @@
+name: celestial_bodies_classifier
+service: 'a_guide_to_mlops.serve:CelestialBodiesClassifierCanaryService'
+include:
+  - a_guide_to_mlops/serve.py
+  - a_guide_to_mlops/utils/config.py
+  - data/prepared/labels.json
+models:
+  - celestial_bodies_classifier_baseline
+  - celestial_bodies_classifier_ptq_dynamic
+  - celestial_bodies_classifier_ptq_float16
+  - celestial_bodies_classifier_ptq_integer
+python:
+  packages:
+    - "tensorflow==2.17.0"
+    - "pillow==10.4.0"
+    - "bentoml==1.3.3"
+    - "numpy==1.24.0"
+docker:
+  python_version: "3.11"
+  env:
+    MODEL_TYPE: "${MODEL_TYPE:-baseline}"
+    BENTOML_CONTAINER: "1"
+labels:
+  project: "celestial_bodies_classifier"
+  quantization_type: "${MODEL_TYPE:-all}"

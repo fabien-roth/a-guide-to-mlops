@@ -1,0 +1,17 @@
+README.md
+setup.py
+a_guide_to_mlops/__init__.py
+a_guide_to_mlops/evaluate.py
+a_guide_to_mlops/prepare.py
+a_guide_to_mlops/serve.py
+a_guide_to_mlops.egg-info/PKG-INFO
+a_guide_to_mlops.egg-info/SOURCES.txt
+a_guide_to_mlops.egg-info/dependency_links.txt
+a_guide_to_mlops.egg-info/top_level.txt
+a_guide_to_mlops/model/__init__.py
+a_guide_to_mlops/model/model_builder.py
+a_guide_to_mlops/utils/__init__.py
+a_guide_to_mlops/utils/config.py
+a_guide_to_mlops/utils/config_loader.py
+a_guide_to_mlops/utils/preprocessing.py
+a_guide_to_mlops/utils/seed.py

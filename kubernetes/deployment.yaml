@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celestial-bodies-classifier-deployment
+  labels:
+    app: celestial-bodies-classifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celestial-bodies-classifier
+  template:
+    metadata:
+      labels:
+        app: celestial-bodies-classifier
+    spec:
+      containers:
+      - name: celestial-bodies-classifier
+        image: europe-west6-docker.pkg.dev/a-guide-to-mlops-438607/mlops-celestial-bodies-classifier-rotf/celestial-bodies-classifier:latest
