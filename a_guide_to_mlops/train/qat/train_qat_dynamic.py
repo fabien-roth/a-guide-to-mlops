@@ -8,9 +8,11 @@ import tf2onnx
 import bentoml
 import onnx
 from onnxruntime.quantization import quantize_dynamic, QuantType
-
 import numpy as np
+import os
 
+# Ajouter le répertoire principal du projet
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, QAT_MODEL_DYNAMIC_DIR
 from a_guide_to_mlops.utils.config_loader import load_config
 from a_guide_to_mlops.utils.seed import set_seed
@@ -46,6 +48,7 @@ def main():
         print("Loading datasets...", flush=True)
         ds_train = tf.data.Dataset.load(str(prepared_dataset_folder / "train"))
         ds_test = tf.data.Dataset.load(str(prepared_dataset_folder / "test"))
+        
         print("Datasets loaded successfully.", flush=True)
     except Exception as e:
         print(f"Error loading datasets: {e}", flush=True)
