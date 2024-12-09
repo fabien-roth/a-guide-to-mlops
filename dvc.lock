@@ -24,7 +24,7 @@ stages:
     outs:
     - path: data/prepared
       hash: md5
-      md5: 5c0195d7a9d8f73e9e67b477685167e3.dir
+      md5: 6ac31d5390c5dc98392cb11917f22d33.dir
       size: 6750060
       nfiles: 8
   train:
@@ -96,7 +96,7 @@ stages:
       size: 4201
     - path: data/prepared
       hash: md5
-      md5: 5c0195d7a9d8f73e9e67b477685167e3.dir
+      md5: 6ac31d5390c5dc98392cb11917f22d33.dir
       size: 6750060
       nfiles: 8
     params:
@@ -111,8 +111,8 @@ stages:
     outs:
     - path: model/baseline/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: 1bf17d11bb0a49402c26808bcdc5336f
-      size: 8264828
+      md5: b6ef4bcbe1ba23667a8b0eb8a85d955f
+      size: 8267612
   ptq_dynamic_train:
     cmd: python3.11 -m a_guide_to_mlops.train.ptq.train_ptq_dynamic data/prepared
       model/ptq/dynamic
@@ -123,7 +123,7 @@ stages:
       size: 4783
     - path: data/prepared
       hash: md5
-      md5: 5c0195d7a9d8f73e9e67b477685167e3.dir
+      md5: 6ac31d5390c5dc98392cb11917f22d33.dir
       size: 6750060
       nfiles: 8
     params:
@@ -138,8 +138,8 @@ stages:
     outs:
     - path: model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: 2d88512c1506b015e000e1c9453f0c6d
-      size: 8260724
+      md5: 56c53bbda499b91859cf476aa396bf39
+      size: 8267936
   ptq_float16_train:
     cmd: python3.11 -m a_guide_to_mlops.train.ptq.train_ptq_float16 data/prepared
       model/ptq/float16
@@ -150,7 +150,7 @@ stages:
       size: 4459
     - path: data/prepared
       hash: md5
-      md5: 5c0195d7a9d8f73e9e67b477685167e3.dir
+      md5: 6ac31d5390c5dc98392cb11917f22d33.dir
       size: 6750060
       nfiles: 8
     params:
@@ -165,8 +165,8 @@ stages:
     outs:
     - path: model/ptq/float16/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: f9e8f74695b9ad763ee9dd9269da6da2
-      size: 8269076
+      md5: b37ebe4d4f8788d08d02d565f10b4bac
+      size: 8265688
   ptq_integer_train:
     cmd: python3.11 -m a_guide_to_mlops.train.ptq.train_ptq_integer data/prepared
       model/ptq/integer
@@ -177,7 +177,7 @@ stages:
       size: 5500
     - path: data/prepared
       hash: md5
-      md5: 5c0195d7a9d8f73e9e67b477685167e3.dir
+      md5: 6ac31d5390c5dc98392cb11917f22d33.dir
       size: 6750060
       nfiles: 8
     params:
@@ -192,8 +192,8 @@ stages:
     outs:
     - path: model/ptq/integer/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: 1f43000c0b71068c95ceafc33ff2cdf2
-      size: 8271752
+      md5: 71b25cd7bb5c09624239db7e8e9d02d4
+      size: 8271076
   qat_dynamic_train:
     cmd: python3.11 a_guide_to_mlops/train/qat/train_qat_dynamic.py data/prepared
       model/qat/dynamic
@@ -284,8 +284,8 @@ stages:
       size: 6096
     - path: model/baseline/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: 1bf17d11bb0a49402c26808bcdc5336f
-      size: 8264828
+      md5: b6ef4bcbe1ba23667a8b0eb8a85d955f
+      size: 8267612
     outs:
     - path: evaluation/baseline/metrics.json
       hash: md5
@@ -312,8 +312,8 @@ stages:
       size: 6096
     - path: model/ptq/dynamic/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: 2d88512c1506b015e000e1c9453f0c6d
-      size: 8260724
+      md5: 56c53bbda499b91859cf476aa396bf39
+      size: 8267936
     outs:
     - path: evaluation/ptq/dynamic/metrics.json
       hash: md5
@@ -340,8 +340,8 @@ stages:
       size: 6096
     - path: model/ptq/float16/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: f9e8f74695b9ad763ee9dd9269da6da2
-      size: 8269076
+      md5: b37ebe4d4f8788d08d02d565f10b4bac
+      size: 8265688
     outs:
     - path: evaluation/ptq/float16/metrics.json
       hash: md5
@@ -368,8 +368,8 @@ stages:
       size: 6096
     - path: model/ptq/integer/celestial_bodies_classifier_model.bentomodel
       hash: md5
-      md5: 1f43000c0b71068c95ceafc33ff2cdf2
-      size: 8271752
+      md5: 71b25cd7bb5c09624239db7e8e9d02d4
+      size: 8271076
     outs:
     - path: evaluation/ptq/integer/metrics.json
       hash: md5
