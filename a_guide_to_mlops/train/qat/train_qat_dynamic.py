@@ -48,6 +48,7 @@ def main():
         print("Loading datasets...", flush=True)
         ds_train = tf.data.Dataset.load(str(prepared_dataset_folder / "train"))
         ds_test = tf.data.Dataset.load(str(prepared_dataset_folder / "test"))
+        
         print("Datasets loaded successfully.", flush=True)
     except Exception as e:
         print(f"Error loading datasets: {e}", flush=True)
