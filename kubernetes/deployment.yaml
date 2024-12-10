@@ -6,6 +6,11 @@ metadata:
     app: celestial-bodies-classifier
 spec:
   replicas: 1
+  strategy:                           # Define rolling update strategy
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0               # No downtime during updates
+      maxSurge: 1                     # Only one extra pod during updates
   selector:
     matchLabels:
       app: celestial-bodies-classifier
@@ -15,5 +20,21 @@ spec:
         app: celestial-bodies-classifier
     spec:
       containers:
-      - name: celestial-bodies-classifier
+      - name: classifier-container
         image: europe-west6-docker.pkg.dev/a-guide-to-mlops-438607/mlops-celestial-bodies-classifier-rotf/celestial-bodies-classifier:latest
+        imagePullPolicy: IfNotPresent  # Avoid unnecessary image pulls
+        ports:
+        - containerPort: 3000         # Application Port
+        - containerPort: 8001         # Metrics Port
+        env:
+        - name: APP_PORT
+          value: "3000"
+        - name: METRICS_PORT
+          value: "8001"
+        volumeMounts:                 # Mount Prometheus ConfigMap
+        - name: prometheus-config
+          mountPath: /etc/prometheus
+      volumes:
+      - name: prometheus-config
+        configMap:
+          name: prometheus-config     # Use Prometheus ConfigMap

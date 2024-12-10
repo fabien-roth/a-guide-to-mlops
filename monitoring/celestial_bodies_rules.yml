@@ -1,0 +1,70 @@
+groups:
+- name: celestial_bodies_service
+  rules:
+  # Total HTTP Requests per model_type
+  - record: job:http_requests_total:rate5m
+    expr: sum(rate(http_requests_total{job="celestial_bodies_service"}[5m])) by (model_type)
+
+  # HTTP Request Latency (95th percentile) per model_type
+  - record: job:http_request_duration_seconds_p95
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="celestial_bodies_service"}[5m])) by (le, model_type))
+
+  # HTTP Request Latency (90th percentile) per model_type
+  - record: job:http_request_duration_seconds_p90
+    expr: histogram_quantile(0.90, sum(rate(http_request_duration_seconds_bucket{job="celestial_bodies_service"}[5m])) by (le, model_type))
+
+  # HTTP Request Latency (average) per model_type
+  - record: job:http_request_duration_seconds_avg
+    expr: sum(rate(http_request_duration_seconds_sum{job="celestial_bodies_service"}[5m])) by (model_type) / sum(rate(http_request_duration_seconds_count{job="celestial_bodies_service"}[5m])) by (model_type)
+
+  # Total HTTP Requests grouped by status (success/error)
+  - record: job:http_requests_total_by_status:rate5m
+    expr: sum(rate(http_requests_total{job="celestial_bodies_service"}[5m])) by (model_type, status)
+
+  # Total HTTP Requests grouped by model_type
+  - record: job:http_requests_total_by_model:rate5m
+    expr: sum(rate(http_requests_total{job="celestial_bodies_service"}[5m])) by (model_type)
+
+  # Total HTTP Requests (absolute count) per model_type
+  - record: job:http_requests_total:count
+    expr: sum(http_requests_total{job="celestial_bodies_service"}) by (model_type)
+
+  # HTTP Request Latency (max) per model_type
+  - record: job:http_request_duration_seconds_max
+    expr: max_over_time(http_request_duration_seconds_sum{job="celestial_bodies_service", model_type!=""}[5m])
+
+  # HTTP Request Latency (min) per model_type
+  - record: job:http_request_duration_seconds_min
+    expr: min_over_time(http_request_duration_seconds_sum{job="celestial_bodies_service", model_type!=""}[5m])
+
+  # Histogram buckets for http_request_duration_seconds by model_type
+  - record: job:http_request_duration_seconds_histogram
+    expr: sum(rate(http_request_duration_seconds_bucket{job="celestial_bodies_service"}[5m])) by (le, model_type)
+
+  # Rate of Requests per model_type
+  - record: job:http_requests_rate:per_model
+    expr: sum(rate(http_requests_total{job="celestial_bodies_service"}[1m])) by (model_type)
+
+  # Total HTTP Requests per service label
+  - record: job:http_requests_total:per_service
+    expr: sum(rate(http_requests_total{job="celestial_bodies_service"}[5m])) by (service)
+
+  # HTTP Request Latency (sum) grouped by service
+  - record: job:http_request_duration_seconds_sum:per_service
+    expr: sum(rate(http_request_duration_seconds_sum{job="celestial_bodies_service"}[5m])) by (service)
+
+  # Total Failed Requests per service label
+  - record: job:http_requests_failed_total:per_service
+    expr: sum(rate(http_requests_failed_total{job="celestial_bodies_service"}[5m])) by (service)
+
+  # Memory Usage (percent)
+  - record: job:memory_usage:percent
+    expr: (1 - (node_memory_free_bytes / node_memory_total_bytes)) * 100
+
+  # CPU Usage (percent) per core
+  - record: job:cpu_usage_per_core:percent
+    expr: 100 * (1 - rate(node_cpu_seconds_total{mode="idle"}[5m]))
+
+  # Total CPU Usage (percent) across all cores
+  - record: job:cpu_usage_total:percent
+    expr: 100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])))

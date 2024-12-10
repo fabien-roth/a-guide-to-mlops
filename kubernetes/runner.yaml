@@ -1,29 +1,28 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: github-runner
+  name: celestial-bodies-runner
   labels:
-    app: github-runner
+    app: celestial-bodies-runner
 spec:
-  containers:
-    - name: github-runner
-      image: ghcr.io/fabien-roth/a-guide-to-mlops/github-runner:latest
-      env:
-        - name: GITHUB_RUNNER_LABEL
-          value: "base-runner"
-        - name: GITHUB_RUNNER_PAT
-          valueFrom:
-            secretKeyRef:
-              name: github-runner-pat
-              key: token
-      securityContext:
-        runAsUser: 1000
-      resources:
-        limits:
-          cpu: "1"
-          memory: "4Gi"
-        requests:
-          cpu: "1"
-          memory: "4Gi"
-  nodeSelector:
-    gpu: "false"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celestial-bodies-runner
+  template:
+    metadata:
+      labels:
+        app: celestial-bodies-runner
+    spec:
+      containers:
+      - name: runner-container
+        image: celestial-bodies-runner:latest  # Original image
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        env:
+        - name: METRICS_PORT
+          value: "8001"
+        - name: APP_PORT
+          value: "3000"
