@@ -17,6 +17,7 @@ stages:
     params:
       - train
     outs:
+      - model/baseline/celestial_bodies_classifier_model.keras
       - model/baseline/celestial_bodies_classifier_model.bentomodel
 
   ptq_dynamic_train:
