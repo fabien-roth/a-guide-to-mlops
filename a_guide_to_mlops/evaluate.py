@@ -1,13 +1,15 @@
 import json
+import os
 import sys
 from pathlib import Path
+import time
 from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import bentoml
 from a_guide_to_mlops.utils.config import EVALUATION_BASELINE_DIR, EVALUATION_PTQ_DIR, EVALUATION_QAT_DIR
-
+from a_guide_to_mlops.utils.quantization_func import evaluate_quantized_model, evaluate_base_model, get_memory_consumption
 
 def get_output_dir(model_folder: Path) -> Path:
     """
@@ -121,7 +123,22 @@ def main() -> None:
     plots_dir = output_dir / "plots"
     plots_dir.mkdir(parents=True, exist_ok=True)
 
-    model_file_path = model_folder / "celestial_bodies_classifier_model.bentomodel"
+    method_extract = model_folder.name
+    if method_extract == "baseline" :
+        model_file_path = model_folder / "celestial_bodies_classifier_model.bentomodel"
+        original_model = model_folder / "celestial_bodies_classifier_model.keras"
+    elif method_extract == "dynamic" :
+        model_file_path = model_folder / "celestial_bodies_classifier_model.bentomodel"
+        quantized_model_tflite = model_folder / "quantized_model.tflite"
+    elif method_extract == "float16" :
+        model_file_path = model_folder / "celestial_bodies_classifier_model.bentomodel"
+        quantized_model_tflite = model_folder / "quantized_model.tflite"
+    elif method_extract == "integer" :
+        model_file_path = model_folder / "celestial_bodies_classifier_model.bentomodel"
+        quantized_model_tflite = model_folder / "quantized_model.tflite"
+    else :
+        print("❌ not founded model path !")
+    
     if not model_file_path.exists():
         print(f"Error: Model file '{model_file_path}' does not exist.")
         exit(1)
@@ -148,14 +165,74 @@ def main() -> None:
         print(f"Error loading model: {e}")
         exit(1)
 
+   
+    
+    if method_extract == "baseline" :
+        overall_accuracy, class_accuracies, average_latency_ms = evaluate_base_model(
+            original_model, ds_test, labels
+        )
+    elif method_extract == "dynamic" :
+        overall_accuracy, class_accuracies, average_latency_ms = evaluate_quantized_model(
+            quantized_model_tflite, ds_test, labels, quantization_type="DYNAMIC"
+        )
+    elif method_extract == "float16" :
+        overall_accuracy, class_accuracies, average_latency_ms = evaluate_quantized_model(
+            quantized_model_tflite, ds_test, labels, quantization_type="FLOAT16"
+        )
+    elif method_extract == "integer" :
+        overall_accuracy, class_accuracies, average_latency_ms = evaluate_quantized_model(
+            quantized_model_tflite, ds_test, labels, quantization_type="INT8"
+        )
+    else :
+        print("❌ can't calculate metrics")
+
+   
+    memory_usage = get_memory_consumption()
+    if method_extract == "baseline" :
+        quantized_model_size = os.path.getsize(model_file_path) / (1024 * 1024)
+    else:
+        quantized_model_size = os.path.getsize(quantized_model_tflite) / (1024 * 1024)
+    
+    
     # Evaluate the model
     val_loss, val_acc = model.evaluate(ds_test)
     print(f"Validation loss: {val_loss:.2f}")
     print(f"Validation accuracy: {val_acc * 100:.2f}%")
+    
+    history_path = model_folder / "history.npy"
+    if history_path.exists():
+        model_history = np.load(history_path, allow_pickle=True).item()
+        # Save training history plot
+        fig = get_training_plot(model_history)
+        fig.savefig(plots_dir / "training_history_ev.png")
+    else:
+        print("Warning: 'history.npy' not found. Skipping training history plot.")
 
-    metrics_file = output_dir / "metrics.json"
-    with open(metrics_file, "w") as f:
-        json.dump({"val_loss": val_loss, "val_acc": val_acc}, f)
+    # Shared metrics file
+    shared_metrics_file = Path(f"{output_dir}/metrics.json")
+    label = f"{output_dir}_{int(time.time())}"
+
+    # Load existing metrics if file exists
+    if shared_metrics_file.exists():
+        with open(shared_metrics_file, "r") as f:
+            all_metrics = json.load(f)
+    else:
+        all_metrics = {}
+
+    # Add the new metrics under the label
+    all_metrics[label] = {
+        "quantized_model_size_mb": quantized_model_size,
+        "overall_accuracy_quantized": overall_accuracy,
+        "overall_loss": val_acc,
+        "accuracy_per_class_quantized": class_accuracies,
+        "memory_usage_mb_quantized": memory_usage,
+        "latency_ms_quantized": average_latency_ms,  # Add latency here
+    }
+
+    # Save updated metrics back to the file
+    shared_metrics_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(shared_metrics_file, "w") as f:
+        json.dump(all_metrics, f, indent=4)
 
     # Save confusion matrix plot
     get_confusion_matrix_plot(model, ds_test, labels).savefig(plots_dir / "confusion_matrix.png")
@@ -166,7 +243,7 @@ def main() -> None:
     model_history = np.load(history_file, allow_pickle=True).item()
     get_training_plot(model_history).savefig(plots_dir / "training_history.png")
 
-    print(f"Evaluation completed. Metrics saved to '{metrics_file}'.")
+    print(f"🔥Metrics appended to shared file: {shared_metrics_file}")
 
 
 if __name__ == "__main__":
