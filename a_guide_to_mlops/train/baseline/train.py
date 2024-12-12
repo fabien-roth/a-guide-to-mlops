@@ -1,4 +1,6 @@
+import os
 import sys
+import time
 import tensorflow as tf
 import bentoml
 import json
@@ -9,6 +11,7 @@ from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, BASELINE_MODEL_DIR
 from a_guide_to_mlops.utils.seed import set_seed
 from a_guide_to_mlops.model.model_builder import get_model
 from a_guide_to_mlops.utils.config_loader import load_config
+from a_guide_to_mlops.utils.quantization_func import get_output_dir
 
 def main():
     # Initial debug prints
@@ -81,11 +84,20 @@ def main():
     model.summary()
 
     # Train the model
-    print("Starting training...", flush=True)
+    print("⚙️ Starting training...", flush=True)
+    start_time = time.time()
     history = model.fit(ds_train, epochs=train_params["epochs"], validation_data=ds_test)
+    training_time = time.time() - start_time
+    print("✅ Model trained successfully")
 
-    # Save the trained model using BentoML with a unique name
-    print("Saving the model using BentoML...", flush=True)
+    # Save the model in Keras' native format
+    print("⚙️ Saving the model in Keras' native format (.keras)...", flush=True)
+    keras_model_path = model_folder / "celestial_bodies_classifier_model.keras"
+    model.save(keras_model_path)
+    print(f"✅ Model saved in Keras format at {keras_model_path}")
+
+    # Save the model using BentoML with a unique name
+    print("⚙️ Saving the model using BentoML...", flush=True)
     bentoml_model_name = "celestial_bodies_classifier_baseline"
     bentoml.keras.save_model(
         bentoml_model_name,
@@ -96,16 +108,43 @@ def main():
             "postprocess": lambda x: labels[tf.argmax(x)],
         }
     )
+    print(f"✅ Model saved with BentoML as {bentoml_model_name}")
 
-    # Export the trained model to the specified model folder
-    print("Exporting the model...", flush=True)
+    # Export the BentoML model for deployment
+    print("⚙️ Exporting the BentoML model...", flush=True)
     bentoml.models.export_model(
         f"{bentoml_model_name}:latest",
         str(model_folder / "celestial_bodies_classifier_model.bentomodel")
     )
-
+    print("✅ Model exported successfully")
     # Save the model history for evaluation purposes
     np.save(model_folder / "history.npy", history.history)
+
+    model_size = sum(os.path.getsize(f) for f in os.scandir(model_folder) if f.is_file()) / (1024 * 1024)
+    metrics = {
+        "model_size_mb": model_size,
+        "training_time_sec": training_time,
+    }
+    
+    output_dir = get_output_dir(model_folder)
+    shared_metrics_file = Path(f"{output_dir}/metrics.json")
+    label = f"baseline_{int(time.time())}"
+
+    # Load existing metrics if file exists
+    if shared_metrics_file.exists():
+        with open(shared_metrics_file, "r") as f:
+            all_metrics = json.load(f)
+    else:
+        all_metrics = {}
+
+    all_metrics[label] = metrics
+
+    # Save updated metrics back to the file
+    shared_metrics_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(shared_metrics_file, "w") as f:
+        json.dump(all_metrics, f, indent=4)
+
+    print(f"✅ Bqseline - Metrics appended to shared file: {shared_metrics_file}")
 
     print(f"\nModel and training history saved at {model_folder.absolute()}", flush=True)
 
