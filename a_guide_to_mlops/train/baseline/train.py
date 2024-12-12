@@ -90,24 +90,28 @@ def main():
     training_time = time.time() - start_time
     print("✅ Model trained successfully")
 
-    # Save the model in Keras' native format
+        # Save the model in Keras' native format
     print("⚙️ Saving the model in Keras' native format (.keras)...", flush=True)
     keras_model_path = model_folder / "celestial_bodies_classifier_model.keras"
     model.save(keras_model_path)
     print(f"✅ Model saved in Keras format at {keras_model_path}")
 
-    # Save the model using BentoML with a unique name
+    # Save the model using BentoML with bentoml.models.create
     print("⚙️ Saving the model using BentoML...", flush=True)
     bentoml_model_name = "celestial_bodies_classifier_baseline"
-    bentoml.keras.save_model(
-        bentoml_model_name,
-        model,
-        include_optimizer=True,
-        custom_objects={
-            "preprocess": lambda x: (x / 255.0),
-            "postprocess": lambda x: labels[tf.argmax(x)],
-        }
+
+    # Create a BentoML model directory
+    bento_model = bentoml.models.create(
+        name=bentoml_model_name,
+        module="tensorflow.keras",
+        labels={"stage": "baseline", "framework": "tensorflow"},
+        metadata={"description": "Celestial Bodies Classifier Model Baseline"},
     )
+
+    # Copy the Keras model into the BentoML directory
+    bento_model_path = Path(bento_model.path) / "model.keras"
+    keras_model_path.rename(bento_model_path)
+
     print(f"✅ Model saved with BentoML as {bentoml_model_name}")
 
     # Export the BentoML model for deployment
@@ -117,6 +121,7 @@ def main():
         str(model_folder / "celestial_bodies_classifier_model.bentomodel")
     )
     print("✅ Model exported successfully")
+    
     # Save the model history for evaluation purposes
     np.save(model_folder / "history.npy", history.history)
 
