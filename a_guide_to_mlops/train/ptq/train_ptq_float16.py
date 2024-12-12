@@ -1,17 +1,16 @@
+import os
 import sys
+from pathlib import Path
+import time
 import tensorflow as tf
 import bentoml
 import json
-from pathlib import Path
 import numpy as np
-import os
-
-# Ajouter le répertoire principal du projet
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR, PTQ_MODEL_FLOAT16_DIR
 from a_guide_to_mlops.utils.config_loader import load_config
 from a_guide_to_mlops.utils.preprocessing import preprocess, postprocess
+from a_guide_to_mlops.utils.quantization_func import get_output_dir, quantize_model
 from a_guide_to_mlops.utils.seed import set_seed
 from a_guide_to_mlops.model.model_builder import get_model
 
@@ -78,43 +77,88 @@ def main():
 
     # Train model
     print("Starting training...", flush=True)
+    start_time = time.time()
     history = model.fit(ds_train, epochs=train_params["epochs"], validation_data=ds_test)
-
+    training_time = time.time() - start_time
+    
     # Apply Float16 Quantization
-    print("Applying Float16 Quantization...", flush=True)
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.target_spec.supported_types = [tf.float16]
-    converter.optimizations = [tf.lite.Optimize.DEFAULT]
-    quantized_model = converter.convert()
+    print("🔧 Applying PTQ Float16 Range Quantization...", flush=True)
+    
+    quantisation_method_choice = "PTQ"
+    quantization_type = "FLOAT16"
+    is_qat=False
+    quantized_model_path = quantize_model(
+            model,
+            model_folder,
+            quantization_type=quantization_type,
+            is_qat=None,
+            ds_train=ds_train if quantisation_method_choice.upper() == "PTQ" or is_qat else None
+        )
+    
+    quantized_model_size = os.path.getsize(quantized_model_path) / (1024 * 1024)
 
-    # Save the quantized TFLite model separately
-    tflite_model_path = model_folder / "celestial_bodies_classifier_model_float16.tflite"
-    with open(tflite_model_path, "wb") as f:
-        f.write(quantized_model)
+    metrics = {
+        "model_size_mb": quantized_model_size,
+        "training_time_sec": training_time,
+    }
 
-    # Save the trained model using BentoML with a unique name for tracking
     print("Saving the model using BentoML...", flush=True)
-    bentoml_model_name = "celestial_bodies_classifier_ptq_float16"  # Unique name for tracking the specific variant
-    bentoml.keras.save_model(
-        bentoml_model_name,
-        model,
-        include_optimizer=True,
-        custom_objects={
-            "preprocess": lambda x: (x / 255.0),
-            "postprocess": lambda x: labels[tf.argmax(x)],
-        }
-    )
+    # Load the quantized model binary
+    with open(quantized_model_path, "rb") as f:
+        quantized_model_data = f.read()
+    
+    # Unique name for tracking the specific variant
+    bento_model_name = "quantized_model"  # Unique name for tracking the specific variant
 
-    # Export the BentoML model to the specified folder for deployment
-    print("Exporting the model...", flush=True)
+    with bentoml.models.create(
+        name=bento_model_name,
+        module="tensorflow-lite",
+        api_version="v1",
+        options={"model_binary": quantized_model_data},
+        labels={"quantization": quantization_type, "method": quantisation_method_choice},
+        metadata={
+            "description": "Quantized TFLite model",
+            "training_time_sec": training_time,
+            "model_size_mb": quantized_model_size,
+        },
+        custom_objects={
+            "preprocess": lambda x: (x / 255.0),  # Example preprocessing logic
+            "postprocess": lambda x: labels[np.argmax(x)],  # Example postprocessing logic
+        },
+    ) as bento_model:
+        print(f"✅ Quantized model saved to BentoML: {bento_model.tag}")
+
+    # Export the Bento model to a .bentomodel file for deployment
+    print("Exporting the Bento model...", flush=True)
     bentoml.models.export_model(
-        f"{bentoml_model_name}:latest",
-        str(model_folder / "celestial_bodies_classifier_model.bentomodel")
+        f"{bento_model.tag}",
+        str(model_folder / "celestial_bodies_classifier_model.bentomodel"),
     )
+    print(f"✅ Bento model exported to: {model_folder / 'celestial_bodies_classifier_model.bentomodel'}")
 
     # Save model training history for evaluation purposes
     history_path = model_folder / "history.npy"
     np.save(history_path, history.history)
+    
+    output_dir = get_output_dir(model_folder)
+    shared_metrics_file = Path(f"{output_dir}/metrics.json")
+    label = f"PTQ_FLOAT16_{int(time.time())}"
+
+    # Load existing metrics if file exists
+    if shared_metrics_file.exists():
+        with open(shared_metrics_file, "r") as f:
+            all_metrics = json.load(f)
+    else:
+        all_metrics = {}
+
+    all_metrics[label] = metrics
+
+    # Save updated metrics back to the file
+    shared_metrics_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(shared_metrics_file, "w") as f:
+        json.dump(all_metrics, f, indent=4)
+
+    print(f"✅ Bqseline - Metrics appended to shared file: {shared_metrics_file}")
 
     print(f"\nModel, TFLite model, and training history saved at {model_folder.absolute()}", flush=True)
 
