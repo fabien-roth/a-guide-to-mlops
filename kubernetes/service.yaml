@@ -5,11 +5,10 @@ metadata:
   labels:
     app: celestial-bodies-classifier
 spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 3000            # External port
+      targetPort: 3000      # Internal container port
   selector:
     app: celestial-bodies-classifier
-  ports:
-    - name: app
-      protocol: TCP
-      port: 80         # External port for app and metrics
-      targetPort: 3000 # Unified internal port for app and metrics
-  type: LoadBalancer

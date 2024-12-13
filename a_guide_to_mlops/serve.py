@@ -8,7 +8,7 @@ import json
 import time
 import os
 import numpy as np
-from prometheus_client import Counter, Histogram, start_http_server
+from prometheus_client import Counter, Histogram
 from tensorflow.keras.models import Sequential
 from pathlib import Path
 from a_guide_to_mlops.utils.config import PREPARED_DATA_DIR
@@ -18,7 +18,6 @@ REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP Requests', ['model_ty
 REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'Request Latency in seconds', ['model_type'])
 ERROR_COUNT = Counter('http_requests_failed_total', 'Total Failed HTTP Requests', ['model_type'])
 
-
 @bentoml.service(name="celestial_bodies_classifier_canary")
 class CelestialBodiesClassifierCanaryService:
     def __init__(self) -> None:
@@ -27,11 +26,7 @@ class CelestialBodiesClassifierCanaryService:
         """
         self.loaded_models = {}
         self.labels = self.load_labels()
-
-        # Start Prometheus metrics server
-        metrics_port = int(os.getenv("METRICS_PORT", 3000))  # Matches prometheus.yml
-        print(f"Starting Prometheus metrics server on port {metrics_port}...")
-        start_http_server(metrics_port)
+        metrics_port = int(os.getenv("METRICS_PORT", 3000))
 
     def load_labels(self):
         """
@@ -97,6 +92,7 @@ class CelestialBodiesClassifierCanaryService:
             # Log metrics for invalid model type
             ERROR_COUNT.labels(model_type=model_type).inc()
             REQUEST_COUNT.labels(model_type=model_type, status="error").inc()
+            print(f"ERROR: Invalid model_type '{model_type}'")
             return json.dumps({
                 "error": f"Invalid model_type '{model_type}'. Valid options are: {', '.join(valid_model_types)}"
             })
@@ -109,6 +105,7 @@ class CelestialBodiesClassifierCanaryService:
             # Log error metrics for model loading failure
             ERROR_COUNT.labels(model_type=model_type).inc()
             REQUEST_COUNT.labels(model_type=model_type, status="error").inc()
+            print(f"ERROR: {str(e)}")
             return json.dumps({"error": str(e)})
 
         preprocess = model_data["preprocess"]
@@ -140,4 +137,5 @@ class CelestialBodiesClassifierCanaryService:
             # Log error metrics
             ERROR_COUNT.labels(model_type=model_type).inc()
             REQUEST_COUNT.labels(model_type=model_type, status="error").inc()
+            print(f"ERROR: An error occurred during prediction: {str(e)}")
             return json.dumps({"error": f"An error occurred during prediction: {str(e)}"})

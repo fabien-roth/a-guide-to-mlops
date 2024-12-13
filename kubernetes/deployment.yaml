@@ -22,15 +22,12 @@ spec:
       containers:
       - name: classifier-container
         image: europe-west6-docker.pkg.dev/a-guide-to-mlops-438607/mlops-celestial-bodies-classifier-rotf/celestial-bodies-classifier:latest
-        imagePullPolicy: IfNotPresent  # Avoid unnecessary image pulls
+        imagePullPolicy: Always  # Avoid unnecessary image pulls
         ports:
         - containerPort: 3000         # Application Port
-        - containerPort: 8001         # Metrics Port
         env:
         - name: APP_PORT
           value: "3000"
-        - name: METRICS_PORT
-          value: "8001"
         volumeMounts:                 # Mount Prometheus ConfigMap
         - name: prometheus-config
           mountPath: /etc/prometheus
