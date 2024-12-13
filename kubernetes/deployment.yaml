@@ -6,11 +6,11 @@ metadata:
     app: celestial-bodies-classifier
 spec:
   replicas: 1
-  strategy:                           # Define rolling update strategy
+  strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 0               # No downtime during updates
-      maxSurge: 1                     # Only one extra pod during updates
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: celestial-bodies-classifier
@@ -22,16 +22,18 @@ spec:
       containers:
       - name: classifier-container
         image: europe-west6-docker.pkg.dev/a-guide-to-mlops-438607/mlops-celestial-bodies-classifier-rotf/celestial-bodies-classifier:latest
-        imagePullPolicy: Always  # Avoid unnecessary image pulls
+        imagePullPolicy: Always
         ports:
-        - containerPort: 3000         # Application Port
+          - containerPort: 3000
         env:
-        - name: APP_PORT
-          value: "3000"
-        volumeMounts:                 # Mount Prometheus ConfigMap
-        - name: prometheus-config
-          mountPath: /etc/prometheus
+          - name: APP_PORT
+            value: "3000"
+          - name: BENTOML_APISERVER_WORKERS
+            value: "1"
+        volumeMounts:
+          - name: prometheus-config
+            mountPath: /etc/prometheus
       volumes:
-      - name: prometheus-config
-        configMap:
-          name: prometheus-config     # Use Prometheus ConfigMap
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
