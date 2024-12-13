@@ -14,11 +14,8 @@ dvc_plots
 # macOS metadata files
 .DS_Store
 
-/model
+#/model
 
 # Label Studio
 extra-data/
 
-/node_exporter-*.darwin-arm64
-
-/prometheus-*.darwin-arm64

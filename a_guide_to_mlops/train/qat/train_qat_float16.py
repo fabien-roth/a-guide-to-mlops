@@ -9,10 +9,6 @@ import onnx
 from onnxruntime.quantization import quantize_dynamic, QuantType
 
 import numpy as np
-import os
-
-# Ajouter le répertoire principal du projet
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from a_guide_to_mlops.utils.config_loader import load_config
 from a_guide_to_mlops.utils.seed import set_seed
