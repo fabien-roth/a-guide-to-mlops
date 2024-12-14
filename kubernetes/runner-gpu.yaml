@@ -13,7 +13,6 @@ spec:
   containers:
     - name: github-runner-gpu-${GITHUB_RUN_ID}
       image: ghcr.io/fabien-roth/a-guide-to-mlops/github-runner:latest
-      # We mount a shared memory volume for training
       volumeMounts:
         - name: dshm
           mountPath: /dev/shm
