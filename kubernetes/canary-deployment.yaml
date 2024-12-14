@@ -18,7 +18,7 @@ spec:
         model_type: canary
     spec:
       containers:
-      - name: classifier-container
+      - name: celestial-bodies-classifier
         image: europe-west6-docker.pkg.dev/a-guide-to-mlops-438607/mlops-celestial-bodies-classifier-rotf/celestial-bodies-classifier:latest
         imagePullPolicy: Always
         ports:
@@ -29,7 +29,7 @@ spec:
           - name: BENTOML_APISERVER_WORKERS
             value: "1"
           - name: MODEL_TYPE
-            value: "ptq_integer" # <-- Canary uses a different model type
+            value: "ptq_integer"
         volumeMounts:
           - name: prometheus-config
             mountPath: /etc/prometheus
