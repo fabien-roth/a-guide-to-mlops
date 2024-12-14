@@ -1,63 +1,42 @@
 groups:
 - name: celestial_bodies_service
   rules:
-  # Total HTTP Requests per model_type
-  - record: job:bentoml_requests_total:rate5m
-    expr: sum(rate(bentoml_service_request_total[5m])) by (model_type)
+    # 5-minute request rate per model_type and status
+    - record: job:http_requests_total:rate5m
+      expr: sum(rate(http_requests_total[5m])) by (model_type, status)
 
-  # HTTP Request Latency (95th percentile) per model_type
-  - record: job:bentoml_request_duration_p95
-    expr: histogram_quantile(0.95, sum(rate(bentoml_service_request_duration_seconds_bucket[5m])) by (le, model_type))
+    # 95th percentile latency per model_type
+    - record: job:http_request_duration_p95
+      expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, model_type))
 
-  # HTTP Request Latency (90th percentile) per model_type
-  - record: job:bentoml_request_duration_p90
-    expr: histogram_quantile(0.90, sum(rate(bentoml_service_request_duration_seconds_bucket[5m])) by (le, model_type))
+    # Average (mean) HTTP Request Latency per model_type
+    - record: job:http_request_duration_avg
+      expr: sum(rate(http_request_duration_seconds_sum[5m])) by (model_type)
+            /
+            sum(rate(http_request_duration_seconds_count[5m])) by (model_type)
 
-  # HTTP Request Latency (average) per model_type
-  - record: job:bentoml_request_duration_avg
-    expr: sum(rate(bentoml_service_request_duration_seconds_sum[5m])) by (model_type) / 
-          sum(rate(bentoml_service_request_duration_seconds_count[5m])) by (model_type)
+    # Error rate per model_type over 5 minutes
+    - record: job:http_error_rate:5m
+      expr: (sum(rate(http_requests_failed_total[5m])) by (model_type))
+             /
+             (sum(rate(http_requests_total[5m])) by (model_type))
 
-  # Total HTTP Requests grouped by status (success/error)
-  - record: job:bentoml_requests_total_by_status:rate5m
-    expr: sum(rate(bentoml_service_request_total[5m])) by (model_type, status)
+    # Node-level Memory Usage (percent)
+    - record: job:memory_usage:percent
+      expr: (1 - (node_memory_free_bytes / node_memory_total_bytes)) * 100
 
-  # Total HTTP Requests grouped by model_type
-  - record: job:bentoml_requests_total_by_model:rate5m
-    expr: sum(rate(bentoml_service_request_total[5m])) by (model_type)
+    # Node-level Total CPU Usage (percent) across all cores
+    - record: job:cpu_usage_total:percent
+      expr: 100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])))
 
-  # Total HTTP Requests (absolute count) per model_type
-  - record: job:bentoml_requests_total:count
-    expr: sum(bentoml_service_request_total) by (model_type)
+    # Container-level CPU Usage (percent) per pod from cAdvisor
+    # This calculates CPU usage by taking the rate of CPU usage seconds and comparing it
+    # to the count of CPU cores (node_cpu_seconds_total).
+    - record: job:container_cpu_usage:percent
+      expr: 100 * (sum(rate(container_cpu_usage_seconds_total[5m])) by (pod))
+             /
+             (count(node_cpu_seconds_total{mode="idle"}) by (instance))
 
-  # HTTP Request Latency (max) per model_type
-  - record: job:bentoml_request_duration_max
-    expr: max_over_time(bentoml_service_request_duration_seconds_sum[5m])
-
-  # HTTP Request Latency (min) per model_type
-  - record: job:bentoml_request_duration_min
-    expr: min_over_time(bentoml_service_request_duration_seconds_sum[5m])
-
-  # Histogram buckets for HTTP Request Duration
-  - record: job:bentoml_request_duration_histogram
-    expr: sum(rate(bentoml_service_request_duration_seconds_bucket[5m])) by (le, model_type)
-
-  # Rate of Requests per model_type
-  - record: job:bentoml_requests_rate:per_model
-    expr: sum(rate(bentoml_service_request_total[1m])) by (model_type)
-
-  # Total Failed Requests per model_type
-  - record: job:bentoml_requests_failed_total
-    expr: sum(rate(bentoml_service_request_failed_total[5m])) by (model_type)
-
-  # Memory Usage (percent)
-  - record: job:memory_usage:percent
-    expr: (1 - (node_memory_free_bytes / node_memory_total_bytes)) * 100
-
-  # CPU Usage (percent) per core
-  - record: job:cpu_usage_per_core:percent
-    expr: 100 * (1 - rate(node_cpu_seconds_total{mode="idle"}[5m]))
-
-  # Total CPU Usage (percent) across all cores
-  - record: job:cpu_usage_total:percent
-    expr: 100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])))
+    # Container-level Memory Usage (bytes) per pod from cAdvisor
+    - record: job:container_memory_usage:bytes
+      expr: sum(container_memory_working_set_bytes) by (pod)

@@ -1,23 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: celestial-bodies-classifier-deployment
+  name: celestial-bodies-classifier-canary-deployment
   labels:
     app: celestial-bodies-classifier
+    model_type: canary
 spec:
   replicas: 1
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
   selector:
     matchLabels:
       app: celestial-bodies-classifier
+      model_type: canary
   template:
     metadata:
       labels:
         app: celestial-bodies-classifier
+        model_type: canary
     spec:
       containers:
       - name: classifier-container
@@ -30,6 +28,8 @@ spec:
             value: "3000"
           - name: BENTOML_APISERVER_WORKERS
             value: "1"
+          - name: MODEL_TYPE
+            value: "ptq_integer" # <-- Canary uses a different model type
         volumeMounts:
           - name: prometheus-config
             mountPath: /etc/prometheus

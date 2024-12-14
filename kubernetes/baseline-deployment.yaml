@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celestial-bodies-classifier-deployment
+  labels:
+    app: celestial-bodies-classifier
+    model_type: baseline # <-- Added label to indicate this is the baseline deployment
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: celestial-bodies-classifier
+      model_type: baseline # <-- Match pods that have model_type=baseline
+  template:
+    metadata:
+      labels:
+        app: celestial-bodies-classifier
+        model_type: baseline # <-- Pod also labeled as baseline
+    spec:
+      containers:
+      - name: classifier-container
+        image: europe-west6-docker.pkg.dev/a-guide-to-mlops-438607/mlops-celestial-bodies-classifier-rotf/celestial-bodies-classifier:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 3000
+        env:
+          - name: APP_PORT
+            value: "3000"
+          - name: BENTOML_APISERVER_WORKERS
+            value: "1"
+          - name: MODEL_TYPE
+            value: "baseline" # <-- Set baseline model type by default
+        volumeMounts:
+          - name: prometheus-config
+            mountPath: /etc/prometheus
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
